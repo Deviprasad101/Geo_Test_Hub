@@ -2,33 +2,35 @@
 
 Geospatial Testing Platform with project creation via **ZIP upload** or **GitHub repository import**.
 
+## Project layout
+
+```
+Geo_Test_Hub/
+├── backend/          # Flask API (Python)
+├── frontend/         # React UI (Vite)
+└── README.md
+```
+
 ## Architecture
 
 | Part | Stack | Port |
 |------|--------|------|
-| **Backend** | Flask (Python) + PostgreSQL | `5000` |
+| **Backend** | Flask + PostgreSQL | `5000` |
 | **Frontend** | React + Vite | `5173` |
 
 Run backend and frontend **in separate terminals**.
-
-## Tech Stack
-
-- **Backend:** Flask, SQLAlchemy, Flask-CORS
-- **Frontend:** React 18, React Router, Vite
-- **Database:** PostgreSQL
-- **Auth:** None — default system user for `user_id` FK
 
 ## Quick Start
 
 ### 1. Backend
 
 ```powershell
-cd "d:\TIH PROJECTS\Geo_Test_Hub\Geo_Test_Hub"
+cd backend
 python -m venv venv
 venv\Scripts\activate
 pip install -r requirements.txt
 copy .env.example .env
-# Edit .env — DATABASE_URL, SECRET_KEY, CORS_ORIGINS
+# Edit .env — DB_USER, DB_PASSWORD, DB_NAME, SECRET_KEY
 
 $env:FLASK_APP="app.py"
 flask init-db
@@ -38,45 +40,51 @@ python app.py
 
 API: http://localhost:5000
 
-### 2. Frontend (separate terminal)
+### 2. Frontend
 
 ```powershell
-cd "d:\TIH PROJECTS\Geo_Test_Hub\Geo_Test_Hub\frontend"
+cd frontend
 npm install
-copy .env.example .env
 npm run dev
 ```
 
 UI: http://localhost:5173
 
-In development, Vite proxies `/api` and `/project` to Flask — you usually **do not** need `VITE_API_URL` in `.env`. For production builds, set `VITE_API_URL=http://localhost:5000` (or your API host).
-
 ## User Flow
 
 1. **Dashboard** — list projects
-2. **Create Project** — enter name → ZIP upload **or** GitHub URL
-3. **Project detail** — view status and metadata
+2. **Create Project** — name → ZIP upload **or** GitHub URL
+3. **Project detail** — scan results and errors
 
-## API Endpoints (backend)
+## API Endpoints
 
 | Method | Path | Description |
 |--------|------|-------------|
 | GET | `/api/health` | Health check |
 | GET | `/api/projects` | List projects |
-| GET | `/api/projects/:id` | Project detail |
+| GET | `/api/projects/:id` | Project detail + errors |
+| POST | `/api/projects/:id/scan` | Re-scan project files |
 | POST | `/project/create` | JSON `{ "name" }` |
 | POST | `/project/upload` | FormData: `project_id`, `zip_file` |
 | POST | `/project/github` | JSON `{ project_id, github_url }` |
 
-## Project Structure
+## Backend structure
 
 ```
-app.py
-routes/          # Flask blueprints (API + project actions)
-models/
-services/
-frontend/        # React app (run with npm run dev)
-  src/pages/
-  src/api/client.js
-uploads/projects/{id}/
+backend/
+  app.py
+  routes/
+  models/
+  services/
+  utils/
+  uploads/projects/{id}/
+  scripts/
+```
+
+## Database scripts
+
+```powershell
+cd backend
+python scripts/create_database.py   # create geo_test_hub DB if missing
+python scripts/rescan_project.py 2  # re-scan project by id
 ```

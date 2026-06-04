@@ -1,24 +1,25 @@
-# Node / React
+# Frontend
 frontend/node_modules/
 frontend/dist/
 
-# Python
-__pycache__/
-*.py[cod]
-*.egg-info/
-.venv/
-venv/
-env/
+# Backend Python
+backend/__pycache__/
+backend/**/__pycache__/
+backend/*.py[cod]
+backend/*.egg-info/
+backend/.venv/
+backend/venv/
+backend/env/
 
 # Environment
-.env
+backend/.env
 
 # SQLite dev database (when USE_SQLITE=1)
-geo_test_hub.db
+backend/geo_test_hub.db
 
 # Uploads (user content)
-uploads/projects/*/
-!uploads/projects/.gitkeep
+backend/uploads/projects/*/
+!backend/uploads/projects/.gitkeep
 
 # IDE
 .idea/
@@ -26,4 +27,5 @@ uploads/projects/*/
 *.swp
 
 # OS
-.DS_Thumbs.db
+.DS_Store
+Thumbs.db
