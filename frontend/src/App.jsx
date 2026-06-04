@@ -1,17 +1,10 @@
-import { Routes, Route } from "react-router-dom";
-import Layout from "./components/Layout";
-import Dashboard from "./pages/Dashboard";
-import CreateProject from "./pages/CreateProject";
-import ProjectDetail from "./pages/ProjectDetail";
+import { useEffect } from "react";
+import AppRoutes from "./routes/AppRoutes";
 
 export default function App() {
-  return (
-    <Layout>
-      <Routes>
-        <Route path="/" element={<Dashboard />} />
-        <Route path="/create" element={<CreateProject />} />
-        <Route path="/projects/:projectId" element={<ProjectDetail />} />
-      </Routes>
-    </Layout>
-  );
+  useEffect(() => {
+    document.title = "GeoAudit – Code Intelligence";
+  }, []);
+
+  return <AppRoutes />;
 }

@@ -1,6 +1,31 @@
-# Geo Test Hub — Project Upload Module
+# Geo Test Hub / GeoAudit
 
-Geospatial Testing Platform with project creation via **ZIP upload** or **GitHub repository import**.
+| Folder | App |
+|--------|-----|
+| `frontend/` | **GeoAudit – Code Intelligence** (React UI) |
+| `backend/` | Flask API — scans ZIP / GitHub uploads for real audit results |
+
+## GeoAudit — run frontend + backend
+
+**Terminal 1 — backend** (required for real audit results):
+
+```powershell
+cd backend
+venv\Scripts\activate
+python app.py
+```
+
+**Terminal 2 — frontend**:
+
+```powershell
+cd frontend
+npm install
+npm run dev
+```
+
+Login with any email/password → http://localhost:5173 → **New Audit** → upload ZIP or GitHub URL → results reflect actual files in that upload.
+
+---
 
 ## Project layout
 

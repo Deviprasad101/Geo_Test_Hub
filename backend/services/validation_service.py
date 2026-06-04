@@ -2,6 +2,7 @@
 from extensions import db
 from models.project import Project
 from models.project_error import ProjectError
+from services.project_analysis import build_audit_analysis
 from services.project_scanner import ScanIssue, scan_project, summarize_scan
 
 
@@ -42,7 +43,9 @@ def validate_project_after_upload(project: Project) -> dict:
     """Scan project files and save errors. Returns summary + issues."""
     issues = scan_project(project.id)
     summary = save_scan_results(project, issues)
+    analysis = build_audit_analysis(project.id, issues)
     return {
         **summary,
         "issues": [i.to_dict() for i in issues],
+        "analysis": analysis,
     }
