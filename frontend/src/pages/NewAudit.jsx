@@ -1,13 +1,13 @@
 import { useState } from "react";
-import { AlertCircle, Shield } from "lucide-react";
+import { AlertCircle } from "lucide-react";
 import UploadPanel, { canStartAudit } from "../components/UploadPanel";
 import FeatureHighlightCards from "../components/FeatureHighlightCards";
 import ProjectStructureCard from "../components/ProjectStructureCard";
 import CodeAnalysisCard from "../components/CodeAnalysisCard";
 import DatasetValidationCard from "../components/DatasetValidationCard";
-import BenchmarkCard from "../components/BenchmarkCard";
+import BenchmarkCard, { AuditFooter } from "../components/BenchmarkCard";
 import { runAudit } from "../api/audit";
-import { benchmarkScores } from "../data/mockData";
+import { computeBenchmarkScores } from "../lib/benchmarkUtils";
 
 export default function NewAudit() {
   const [zipFile, setZipFile] = useState(null);
@@ -43,6 +43,9 @@ export default function NewAudit() {
   const datasets = analysis?.datasets;
   const showResults = Boolean(analysis);
   const showResultsSection = auditing || showResults;
+  const benchmarkScores = showResults
+    ? computeBenchmarkScores(analysis, scanSummary)
+    : null;
 
   const resetInputs = () => {
     setAnalysis(null);
@@ -102,16 +105,7 @@ export default function NewAudit() {
         </div>
       )}
 
-      <footer className="mx-auto flex max-w-6xl flex-wrap items-center justify-center gap-x-6 gap-y-2 border-t border-slate-100 pt-8 text-xs text-slate-400">
-        <span className="inline-flex items-center gap-1.5">
-          <Shield size={14} className="text-slate-300" />
-          Enterprise-grade security
-        </span>
-        <span className="hidden h-3 w-px bg-slate-200 sm:inline" />
-        <span>SOC 2 Compliant</span>
-        <span className="hidden h-3 w-px bg-slate-200 sm:inline" />
-        <span>GDPR Ready</span>
-      </footer>
+      <AuditFooter />
     </div>
   );
 }

@@ -135,6 +135,31 @@ def analyze_datasets(project_id: int, issues: list[ScanIssue], structure: dict) 
     invalid_records = sum(1 for i in dataset_errors if i.severity == "error")
     missing_values = sum(1 for i in dataset_errors if i.severity == "warning")
 
+    files_with_errors = {i.file_path for i in dataset_errors if i.severity == "error"}
+    files_with_warnings = {i.file_path for i in dataset_errors if i.severity == "warning"}
+
+    file_details = []
+    for rel in dataset_files:
+        full_path = root / Path(rel)
+        try:
+            size_bytes = full_path.stat().st_size if full_path.is_file() else 0
+        except OSError:
+            size_bytes = 0
+        if rel in files_with_errors:
+            file_status = "invalid"
+        elif rel in files_with_warnings:
+            file_status = "warning"
+        else:
+            file_status = "valid"
+        file_details.append(
+            {
+                "path": rel,
+                "name": Path(rel).name,
+                "size_bytes": size_bytes,
+                "status": file_status,
+            }
+        )
+
     if not dataset_files:
         status = "none"
         schema_check = "n/a"
@@ -150,6 +175,7 @@ def analyze_datasets(project_id: int, issues: list[ScanIssue], structure: dict) 
 
     return {
         "dataset_files": dataset_files,
+        "file_details": file_details,
         "dataset_file_count": len(dataset_files),
         "validation_status": status,
         "missing_values": missing_values,
