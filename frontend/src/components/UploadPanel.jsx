@@ -5,7 +5,6 @@ import {
   CloudUpload,
   Github,
   Loader2,
-  Sparkles,
   Upload,
 } from "lucide-react";
 import AuditHeadingCard from "./AuditHeadingCard";
@@ -148,13 +147,10 @@ export default function UploadPanel({
             {auditing ? (
               <>
                 <Loader2 className="h-5 w-5 animate-spin" />
-                Scanning files…
+                Auditing…
               </>
             ) : (
-              <>
-                <Sparkles className="h-5 w-5" />
-                Start Smart Audit
-              </>
+              "Audit"
             )}
           </span>
           <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-white/20 transition group-hover:bg-white/30">

@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import AuditHeroDecor from "./AuditHeroDecor";
+import GeoTestHubBrand from "./GeoTestHubBrand";
 
 export default function AuditHeadingCard({ compact = false }) {
   return (
@@ -27,13 +28,9 @@ export default function AuditHeadingCard({ compact = false }) {
           <p className="text-xs font-semibold uppercase tracking-widest text-indigo-600">
             Code intelligence platform
           </p>
-          <h1
-            className={`mt-2 font-bold tracking-tight text-slate-900 ${
-              compact ? "text-2xl md:text-3xl" : "text-3xl md:text-4xl"
-            }`}
-          >
-            Geo Test Hub
-          </h1>
+          <div className="mt-3">
+            <GeoTestHubBrand size={compact ? "md" : "lg"} />
+          </div>
           <p
             className={`mt-3 leading-relaxed text-slate-600 ${
               compact ? "text-sm md:text-base" : "text-base md:text-lg"

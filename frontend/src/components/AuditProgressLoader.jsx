@@ -54,7 +54,7 @@ export default function AuditProgressLoader({ progress = 0 }) {
           </div>
         </div>
         <div className="mt-5 text-center sm:mt-0 sm:text-left">
-          <p className="text-lg font-semibold text-slate-800">Running smart audit</p>
+          <p className="text-lg font-semibold text-slate-800">Running audit</p>
           <p className="mt-1 text-sm text-slate-500">Analyzing your project…</p>
           <div className="mt-4 h-2 w-full max-w-xs overflow-hidden rounded-full bg-slate-100 sm:max-w-sm">
             <div
