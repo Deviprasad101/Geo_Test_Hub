@@ -50,7 +50,7 @@ export default function BenchmarkCard({ scores, visible }) {
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay: 0.16 }}
-      className="overflow-hidden rounded-2xl border border-slate-100/80 bg-white p-6 shadow-xl shadow-slate-200/40"
+      className="min-w-0 overflow-hidden rounded-2xl border border-slate-100/80 bg-white p-4 shadow-xl shadow-slate-200/40 sm:p-5 lg:p-6"
     >
       <header className="mb-6 flex flex-wrap items-start justify-between gap-4">
         <div className="flex items-center gap-3">
@@ -72,7 +72,7 @@ export default function BenchmarkCard({ scores, visible }) {
         </button>
       </header>
 
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 min-[480px]:grid-cols-2 xl:grid-cols-4">
         {METRICS.map((m, i) => {
           const value = scores[m.key] ?? 0;
           const rating = scoreRating(value);
@@ -129,7 +129,7 @@ export default function BenchmarkCard({ scores, visible }) {
 
 export function AuditFooter() {
   return (
-    <footer className="mx-auto flex max-w-6xl flex-wrap items-center justify-center gap-x-6 gap-y-2 border-t border-slate-100 pt-8 text-xs text-slate-400">
+    <footer className="mx-auto flex w-full min-w-0 max-w-full flex-wrap items-center justify-center gap-x-6 gap-y-2 border-t border-slate-100 pt-8 text-xs text-slate-400">
       <span className="inline-flex items-center gap-1.5">
         <Shield size={14} className="text-slate-300" />
         Enterprise-grade security

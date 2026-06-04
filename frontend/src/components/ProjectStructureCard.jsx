@@ -87,7 +87,7 @@ export default function ProjectStructureCard({ structure, loading }) {
         </button>
       </header>
 
-      <div className="mb-6 grid grid-cols-3 gap-3">
+      <div className="mb-6 grid grid-cols-3 gap-2 sm:gap-3">
         <StatMini
           icon={Files}
           iconBg="bg-blue-50 text-blue-600"
@@ -117,7 +117,9 @@ export default function ProjectStructureCard({ structure, loading }) {
             return (
               <li key={f.type} className="flex items-center gap-3 text-sm">
                 <Icon size={16} className="shrink-0 text-slate-400" />
-                <span className="w-24 shrink-0 font-medium text-slate-700">{f.type}</span>
+                <span className="w-16 shrink-0 truncate font-medium text-slate-700 sm:w-20 lg:w-24">
+                  {f.type}
+                </span>
                 <div className="h-2 flex-1 overflow-hidden rounded-full bg-slate-100">
                   <motion.div
                     initial={{ width: 0 }}
@@ -176,7 +178,7 @@ function CardShell({ children }) {
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
-      className="relative overflow-hidden rounded-2xl border border-slate-100/80 bg-white p-6 shadow-xl shadow-slate-200/40"
+      className="relative h-full min-w-0 overflow-hidden rounded-2xl border border-slate-100/80 bg-white p-4 shadow-xl shadow-slate-200/40 sm:p-5 lg:p-6"
     >
       {children}
     </motion.div>

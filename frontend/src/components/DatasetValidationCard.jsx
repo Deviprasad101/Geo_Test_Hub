@@ -72,7 +72,7 @@ export default function DatasetValidationCard({ datasets, loading }) {
       <CardShell>
         <div className="animate-pulse space-y-4">
           <div className="h-14 rounded-xl bg-slate-100" />
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <div className="grid grid-cols-2 gap-2 sm:gap-3">
             {[1, 2, 3, 4].map((i) => (
               <div key={i} className="h-24 rounded-xl bg-slate-100" />
             ))}
@@ -158,7 +158,7 @@ export default function DatasetValidationCard({ datasets, loading }) {
         </div>
       </div>
 
-      <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
+      <div className="mb-6 grid grid-cols-2 gap-2 sm:gap-3">
         <MetricCard
           icon={FileStack}
           iconBg="bg-blue-50 text-blue-600"
@@ -202,7 +202,7 @@ export default function DatasetValidationCard({ datasets, loading }) {
       </div>
 
       {fileDetails.length > 0 && (
-        <div className="grid gap-6 lg:grid-cols-[1fr_auto]">
+        <div className="grid grid-cols-1 gap-6 2xl:grid-cols-[1fr_auto]">
           <div>
             <p className="mb-3 text-xs font-bold tracking-wide text-emerald-600">
               DATA FILES CHECKED ({fileDetails.length})
@@ -226,7 +226,7 @@ export default function DatasetValidationCard({ datasets, loading }) {
               ))}
             </ul>
           </div>
-          <div className="hidden lg:flex items-center justify-center px-4">
+          <div className="hidden items-center justify-center px-4 2xl:flex">
             <div className="relative">
               <div className="flex gap-1">
                 {[0, 1, 2].map((i) => (
@@ -269,7 +269,7 @@ function CardShell({ children }) {
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay: 0.12 }}
-      className="overflow-hidden rounded-2xl border border-slate-100/80 bg-white p-6 shadow-xl shadow-slate-200/40"
+      className="h-full min-w-0 overflow-hidden rounded-2xl border border-slate-100/80 bg-white p-4 shadow-xl shadow-slate-200/40 sm:p-5 lg:p-6"
     >
       {children}
     </motion.div>

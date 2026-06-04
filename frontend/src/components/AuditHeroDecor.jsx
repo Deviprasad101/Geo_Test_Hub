@@ -8,9 +8,13 @@ const icons = [
   { Icon: Database, className: "right-[6%] top-[18%] text-emerald-500", delay: 0.45 },
 ];
 
-export default function AuditHeroDecor() {
+export default function AuditHeroDecor({ compact = false }) {
   return (
-    <div className="pointer-events-none absolute right-0 top-0 hidden h-48 w-72 md:block lg:w-96">
+    <div
+      className={`pointer-events-none absolute right-0 top-0 hidden md:block ${
+        compact ? "h-40 w-64 lg:w-80" : "h-48 w-72 lg:w-96"
+      }`}
+    >
       <svg
         className="absolute inset-0 h-full w-full opacity-40"
         viewBox="0 0 320 180"

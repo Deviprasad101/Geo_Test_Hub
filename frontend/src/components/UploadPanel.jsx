@@ -5,11 +5,10 @@ import {
   CloudUpload,
   Github,
   Loader2,
-  Lock,
   Sparkles,
   Upload,
 } from "lucide-react";
-import AuditHeroDecor from "./AuditHeroDecor";
+import AuditHeadingCard from "./AuditHeadingCard";
 
 export default function UploadPanel({
   zipFile,
@@ -19,6 +18,7 @@ export default function UploadPanel({
   disabled,
   onStartAudit,
   auditing,
+  compact = false,
 }) {
   const [dragOver, setDragOver] = useState(false);
   const canStart = canStartAudit(zipFile, githubUrl);
@@ -37,40 +37,17 @@ export default function UploadPanel({
   );
 
   return (
-    <div className="mx-auto max-w-6xl space-y-8">
-      {/* Hero header */}
-      <motion.div
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="relative"
-      >
-        <AuditHeroDecor />
-        <div className="relative z-10 max-w-2xl">
-          <h2 className="text-3xl font-bold tracking-tight text-slate-900 md:text-4xl">
-            New Audit
-          </h2>
-          <p className="mt-2 text-base text-slate-500 md:text-lg">
-            Analyze your codebase with AI-powered intelligence
-          </p>
-          <div className="mt-4 flex flex-wrap gap-2">
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-violet-50 px-3 py-1 text-xs font-medium text-violet-700 ring-1 ring-violet-100">
-              <Sparkles size={14} />
-              Smart Analysis
-            </span>
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-700 ring-1 ring-emerald-100">
-              <Lock size={14} />
-              Secure &amp; Private
-            </span>
-          </div>
-        </div>
-      </motion.div>
+    <div className={`mx-auto w-full min-w-0 max-w-full ${compact ? "space-y-4" : "space-y-8"}`}>
+      <AuditHeadingCard compact={compact} />
 
       {/* Main upload card */}
       <motion.div
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.05 }}
-        className="audit-main-card relative overflow-hidden rounded-3xl border border-white/80 bg-white/90 p-6 shadow-xl shadow-slate-200/50 backdrop-blur-md md:p-8 lg:p-10"
+        className={`audit-main-card relative overflow-hidden rounded-3xl border border-white/80 bg-white/90 shadow-xl shadow-slate-200/50 backdrop-blur-md ${
+          compact ? "p-4 md:p-5 lg:p-6" : "p-6 md:p-8 lg:p-10"
+        }`}
       >
         <div className="relative grid gap-8 lg:grid-cols-2 lg:gap-10">
           <div className="pointer-events-none absolute left-1/2 top-1/2 z-20 hidden -translate-x-1/2 -translate-y-1/2 lg:block">

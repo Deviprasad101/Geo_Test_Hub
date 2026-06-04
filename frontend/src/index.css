@@ -41,4 +41,21 @@
   .sidebar-link-active {
     @apply bg-blue-50 text-primary shadow-sm;
   }
+  .audit-results-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1.25rem;
+    align-items: stretch;
+  }
+  @media (min-width: 768px) {
+    .audit-results-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 1.5rem;
+    }
+  }
+  @media (min-width: 1280px) {
+    .audit-results-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
 }
