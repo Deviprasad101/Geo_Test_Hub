@@ -44,6 +44,105 @@
   .geo-brand-title {
     text-shadow: 0 1px 2px rgba(15, 23, 42, 0.06), 0 2px 8px rgba(37, 99, 235, 0.08);
   }
+  .login-page {
+    height: 100dvh;
+    max-height: 100dvh;
+    overflow: hidden;
+  }
+  .login-glass-card {
+    @apply backdrop-blur-xl;
+  }
+  .login-input {
+    @apply w-full rounded-xl border border-slate-200/80 bg-white/90 py-3.5 pl-11 pr-4 text-sm text-slate-800 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100;
+  }
+  .login-dots-bg {
+    background-image: radial-gradient(
+      circle at 1px 1px,
+      rgba(148, 163, 184, 0.28) 1px,
+      transparent 0
+    );
+    background-size: 28px 28px;
+    animation: login-dots-drift 24s linear infinite;
+  }
+  .login-dots-bg-layer {
+    background-image: radial-gradient(
+      circle at 1px 1px,
+      rgba(99, 102, 241, 0.12) 1px,
+      transparent 0
+    );
+    background-size: 28px 28px;
+    animation: login-dots-drift 36s linear infinite reverse;
+  }
+  @keyframes login-dots-drift {
+    0% {
+      background-position: 0 0;
+    }
+    100% {
+      background-position: 28px 28px;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .login-dots-bg,
+    .login-dots-bg-layer,
+    .login-gradient-text,
+    .login-feature-icon,
+    .login-login-card-glow {
+      animation: none;
+    }
+  }
+  .login-gradient-text {
+    background: linear-gradient(135deg, #2563eb, #7c3aed, #06b6d4, #2563eb);
+    background-size: 300% 300%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: login-gradient-shift 6s ease infinite;
+  }
+  @keyframes login-gradient-shift {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+  }
+  .login-features-panel .login-feature-cell {
+    transition: background-color 0.2s ease;
+  }
+  .login-features-panel .login-feature-cell:hover {
+    background: rgba(248, 250, 252, 0.9);
+  }
+  .login-features-panel .login-feature-icon {
+    animation: login-icon-float 3s ease-in-out infinite;
+  }
+  .login-features-panel .login-feature-cell:nth-child(2) .login-feature-icon {
+    animation-delay: 0.5s;
+  }
+  .login-features-panel .login-feature-cell:nth-child(3) .login-feature-icon {
+    animation-delay: 1s;
+  }
+  .login-features-panel .login-feature-cell:nth-child(4) .login-feature-icon {
+    animation-delay: 1.5s;
+  }
+  @keyframes login-icon-float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-3px); }
+  }
+  .login-login-card {
+    position: relative;
+    border-radius: 1.5rem;
+    background: #ffffff;
+    border: 1px solid rgba(226, 232, 240, 0.9);
+    box-shadow: 0 8px 32px rgba(15, 23, 42, 0.06);
+  }
+  .login-login-card-glow {
+    position: absolute;
+    inset: -12px;
+    z-index: -1;
+    border-radius: 1.75rem;
+    background: linear-gradient(135deg, rgba(241, 245, 249, 0.9), rgba(248, 250, 252, 0.95));
+    filter: blur(16px);
+    opacity: 0.85;
+  }
+  .login-login-card-border {
+    display: none;
+  }
   .audit-results-grid {
     display: grid;
     grid-template-columns: minmax(0, 1fr);

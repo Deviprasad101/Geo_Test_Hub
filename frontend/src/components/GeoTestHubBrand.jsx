@@ -1,4 +1,4 @@
-function BrandTitle({ size = "md" }) {
+function BrandTitle({ size = "md", dark = false }) {
   const textClass =
     size === "lg"
       ? "text-3xl sm:text-4xl"
@@ -13,7 +13,7 @@ function BrandTitle({ size = "md" }) {
       <h1
         className={`geo-brand-title font-bold tracking-tight ${textClass}`}
       >
-        <span className="relative inline-block text-slate-900">
+        <span className={`relative inline-block ${dark ? "text-white" : "text-slate-900"}`}>
           Geo
           <span
             className={`absolute -bottom-1.5 left-0 flex items-center gap-0.5 ${size === "lg" ? "-bottom-2" : ""}`}
@@ -25,8 +25,8 @@ function BrandTitle({ size = "md" }) {
             <span className="h-1.5 w-1.5 rounded-full bg-violet-500" />
           </span>
         </span>
-        <span className="font-extrabold text-sky-500"> Test</span>
-        <span className="text-slate-900"> Hub</span>
+        <span className={`font-extrabold ${dark ? "text-sky-300" : "text-sky-500"}`}> Test</span>
+        <span className={dark ? "text-white" : "text-slate-900"}> Hub</span>
       </h1>
     </div>
   );
@@ -36,12 +36,13 @@ export default function GeoTestHubBrand({
   size = "md",
   className = "",
   showCard = true,
+  dark = false,
 }) {
   const pad = size === "lg" ? "px-5 py-3.5 sm:px-6" : "px-3.5 py-2 sm:px-4";
 
   const inner = (
     <div className={pad}>
-      <BrandTitle size={size} />
+      <BrandTitle size={size} dark={dark} />
     </div>
   );
 

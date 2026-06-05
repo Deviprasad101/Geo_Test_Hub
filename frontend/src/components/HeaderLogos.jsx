@@ -8,15 +8,18 @@ const logos = [
   { src: makeInIndiaLogo, alt: "Make in India" },
 ];
 
-export default function HeaderLogos() {
+export default function HeaderLogos({
+  className = "",
+  logoClassName = "h-8 w-auto max-w-[5.5rem] object-contain sm:h-9 sm:max-w-none md:h-10",
+}) {
   return (
-    <div className="flex shrink-0 items-center gap-2 sm:gap-3 md:gap-4">
+    <div className={`flex shrink-0 items-center gap-2 sm:gap-3 md:gap-4 ${className}`}>
       {logos.map(({ src, alt }) => (
         <img
           key={alt}
           src={src}
           alt={alt}
-          className="h-8 w-auto max-w-[5.5rem] object-contain sm:h-9 sm:max-w-none md:h-10"
+          className={logoClassName}
         />
       ))}
     </div>

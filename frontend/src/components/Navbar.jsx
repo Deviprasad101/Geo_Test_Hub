@@ -12,7 +12,7 @@ export default function Navbar({ title, isNewAudit = false }) {
     <header className="sticky top-0 z-10 border-b border-slate-200/80 bg-white/70 px-4 py-3 backdrop-blur-md sm:px-6 lg:px-8">
       <div className="flex items-center justify-between gap-3 sm:gap-4">
         <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
-          {isNewAudit && !sidebarOpen && (
+          {!sidebarOpen && (
             <button
               type="button"
               onClick={() => auditCtx?.setSidebarOpen(true)}

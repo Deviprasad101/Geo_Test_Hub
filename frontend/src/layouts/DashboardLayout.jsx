@@ -17,11 +17,10 @@ const titles = {
 function DashboardShell({ isNewAudit }) {
   const { pathname } = useLocation();
   const auditCtx = useNewAudit();
-  const sidebarOpen = isNewAudit ? (auditCtx?.sidebarOpen ?? true) : true;
+  const sidebarOpen = auditCtx?.sidebarOpen ?? true;
   const title = titles[pathname] || "GeoAudit";
 
-  const mainPad =
-    isNewAudit && sidebarOpen ? "lg:pl-64" : isNewAudit ? "lg:pl-0" : "lg:pl-64";
+  const mainPad = sidebarOpen ? "lg:pl-64" : "lg:pl-0";
 
   return (
     <div className="min-h-screen bg-surface">
@@ -50,13 +49,9 @@ export default function DashboardLayout() {
   const { pathname } = useLocation();
   const isNewAudit = pathname === "/audit/new";
 
-  if (isNewAudit) {
-    return (
-      <NewAuditProvider>
-        <DashboardShell isNewAudit />
-      </NewAuditProvider>
-    );
-  }
-
-  return <DashboardShell isNewAudit={false} />;
+  return (
+    <NewAuditProvider>
+      <DashboardShell isNewAudit={isNewAudit} />
+    </NewAuditProvider>
+  );
 }

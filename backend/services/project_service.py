@@ -59,6 +59,130 @@ def validate_github_url(url: str) -> str:
     return url
 
 
+def normalize_github_url(url: str) -> str:
+    """Canonical form for duplicate detection."""
+    url = (url or "").strip().lower()
+    url = re.sub(r"^https?://", "", url)
+    url = re.sub(r"^www\.", "", url)
+    url = url.rstrip("/")
+    if url.endswith(".git"):
+        url = url[:-4]
+    return url
+
+
+def github_repo_slug(url: str) -> str | None:
+    """Return owner/repo from a GitHub URL, or None."""
+    normalized = normalize_github_url(url)
+    match = re.search(r"github\.com/([^/]+/[^/?#]+)", normalized)
+    return match.group(1).lower() if match else None
+
+
+def get_project_source_key(project) -> str:
+    """Stable key for one audit per repository or ZIP upload."""
+    if project.github_url:
+        slug = github_repo_slug(project.github_url)
+        if slug:
+            return f"github:{slug}"
+        return f"github:{normalize_github_url(project.github_url)}"
+    return f"zip:{(project.name or '').strip().lower()}"
+
+
+def find_existing_audit_project(user_id: int, *, name: str | None = None, github_url: str | None = None):
+    """Return the newest existing project for the same GitHub repo or ZIP name."""
+    from models.project import Project
+
+    if github_url:
+        try:
+            canonical = normalize_github_url(validate_github_url(github_url))
+        except ProjectServiceError:
+            canonical = normalize_github_url(github_url)
+        slug = github_repo_slug(canonical)
+
+        candidates = (
+            Project.query.filter_by(user_id=user_id)
+            .filter(Project.github_url.isnot(None))
+            .order_by(Project.created_at.desc())
+            .all()
+        )
+        for project in candidates:
+            stored = normalize_github_url(project.github_url)
+            if stored == canonical:
+                return project
+            if slug and github_repo_slug(project.github_url) == slug:
+                return project
+
+        if name:
+            by_name = (
+                Project.query.filter_by(user_id=user_id, name=name)
+                .filter(Project.github_url.isnot(None))
+                .order_by(Project.created_at.desc())
+                .first()
+            )
+            if by_name:
+                return by_name
+        return None
+
+    if name:
+        zip_match = (
+            Project.query.filter_by(user_id=user_id, name=name)
+            .filter(Project.github_url.is_(None))
+            .order_by(Project.created_at.desc())
+            .first()
+        )
+        if zip_match:
+            return zip_match
+    return None
+
+
+def _remove_project_directory(path: Path) -> None:
+    if not path.exists():
+        return
+    try:
+        shutil.rmtree(path, onexc=_on_rmtree_error)
+    except OSError:
+        logger.warning("Could not remove project directory %s", path)
+
+
+def delete_project_storage(project_id: int) -> None:
+    """Remove on-disk files for a project."""
+    _remove_project_directory(UPLOAD_ROOT / str(project_id))
+
+
+def cleanup_duplicate_audit_projects(user_id: int) -> int:
+    """Keep the newest audit per repo/ZIP; delete older duplicates."""
+    from extensions import db
+    from models.project import Project
+
+    projects = (
+        Project.query.filter_by(user_id=user_id)
+        .order_by(Project.created_at.desc())
+        .all()
+    )
+    seen: dict[str, object] = {}
+    duplicates = []
+
+    for project in projects:
+        key = get_project_source_key(project)
+        if key in seen:
+            duplicates.append(project)
+        else:
+            seen[key] = project
+
+    for project in duplicates:
+        delete_project_storage(project.id)
+        db.session.delete(project)
+
+    if duplicates:
+        db.session.commit()
+        logger.info(
+            "Removed %s duplicate audit project(s) for user %s",
+            len(duplicates),
+            user_id,
+        )
+
+    return len(duplicates)
+
+
 def _safe_extract_zip(archive_path: Path, dest_dir: Path) -> None:
     """Extract ZIP with path-traversal protection."""
     dest_resolved = dest_dir.resolve()

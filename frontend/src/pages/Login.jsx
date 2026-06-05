@@ -1,13 +1,29 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Lock, Mail, Shield } from "lucide-react";
+import { ArrowRight, Eye, EyeOff, Globe, Lock, Mail } from "lucide-react";
 import { isAuthenticated, login } from "../lib/auth";
+import LoginHeader from "../components/LoginHeader";
+import LoginBackground from "../components/login/LoginBackground";
+import LoginHero from "../components/login/LoginHero";
+import LoginFeatureCards from "../components/login/LoginFeatureCards";
+import LoginTrustBar from "../components/login/LoginTrustBar";
 
 export default function Login() {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [remember, setRemember] = useState(false);
+
+  useEffect(() => {
+    document.documentElement.style.overflow = "hidden";
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.documentElement.style.overflow = "";
+      document.body.style.overflow = "";
+    };
+  }, []);
 
   if (isAuthenticated()) {
     return <Navigate to="/audit/new" replace />;
@@ -20,62 +36,131 @@ export default function Login() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-50 via-blue-50/30 to-sky-50 p-6">
-      <motion.div
-        initial={{ opacity: 0, y: 24 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="w-full max-w-md glass-card p-10"
-      >
-        <div className="mb-8 text-center">
-          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary text-2xl font-bold text-white shadow-lg shadow-blue-500/25">
-            ●
-          </div>
-          <h1 className="text-2xl font-bold text-slate-800">GeoAudit</h1>
-          <p className="mt-1 text-slate-500">Code Intelligence Platform</p>
-        </div>
+    <div className="login-page relative flex flex-col bg-gradient-to-br from-[#f4f6fb] via-[#f0f2f7] to-[#eef2ff]">
+      <LoginBackground />
+      <LoginHeader />
 
-        <form onSubmit={handleSubmit} className="space-y-5">
-          <div>
-            <label className="mb-1.5 block text-sm font-medium text-slate-600">Email</label>
+      <main className="relative z-10 mx-auto flex min-h-0 w-full max-w-[1400px] flex-1 flex-col items-stretch gap-3 overflow-hidden px-4 py-3 sm:px-6 lg:flex-row lg:gap-8 lg:px-10 lg:py-4">
+        <motion.section
+          id="hero"
+          initial={{ opacity: 0, x: -16 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.45 }}
+          className="flex min-h-0 min-w-0 flex-1 flex-col justify-center overflow-hidden lg:max-w-[55%]"
+        >
+          <LoginHero />
+          <LoginFeatureCards />
+        </motion.section>
+
+        <motion.div
+          id="login-form"
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.08 }}
+          className="relative flex min-h-0 w-full flex-1 shrink-0 items-center justify-center overflow-hidden lg:flex-none lg:max-w-[420px] xl:max-w-[440px]"
+        >
+          <div className="login-login-card relative z-10 w-full max-h-full overflow-hidden p-5 sm:p-6 lg:p-7">
+            <div className="login-login-card-glow" aria-hidden />
+            <div className="login-login-card-border" aria-hidden />
+
             <div className="relative">
-              <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@company.com"
-                className="w-full rounded-xl border border-slate-200 py-3 pl-10 pr-4 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
-              />
+              <div className="mb-4 flex flex-col items-center text-center lg:mb-5">
+                <motion.div
+                  animate={{ y: [0, -4, 0] }}
+                  transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                  className="mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-[#2563EB] via-[#7C3AED] to-[#06B6D4] shadow-lg shadow-[#2563EB]/30 lg:h-14 lg:w-14"
+                >
+                  <Globe size={24} className="text-white lg:h-7 lg:w-7" strokeWidth={1.75} />
+                </motion.div>
+                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#7C3AED] lg:text-xs">
+                  Welcome Back
+                </p>
+                <h2 className="mt-1 text-lg font-bold text-[#0F172A] lg:text-xl">Sign in securely</h2>
+                <p className="mt-1 text-xs text-slate-500">
+                  Access your sandbox workspace and run intelligent project audits.
+                </p>
+              </div>
+
+              <form onSubmit={handleSubmit} className="space-y-3 lg:space-y-3.5">
+                <div>
+                  <label htmlFor="login-email" className="mb-1 block text-xs font-medium text-slate-700">
+                    Email
+                  </label>
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                    <input
+                      id="login-email"
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="you@organization.com"
+                      className="login-input !py-3"
+                      autoComplete="email"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <div className="mb-1 flex items-center justify-between">
+                    <label htmlFor="login-password" className="text-xs font-medium text-slate-700">
+                      Password
+                    </label>
+                    <button type="button" className="text-[10px] font-medium text-[#2563EB] lg:text-xs">
+                      Forgot password?
+                    </button>
+                  </div>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                    <input
+                      id="login-password"
+                      type={showPassword ? "text" : "password"}
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="Enter your password"
+                      className="login-input !py-3 pr-10"
+                      autoComplete="current-password"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword((v) => !v)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                      aria-label={showPassword ? "Hide password" : "Show password"}
+                    >
+                      {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
+                    </button>
+                  </div>
+                </div>
+
+                <label className="flex cursor-pointer items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={remember}
+                    onChange={(e) => setRemember(e.target.checked)}
+                    className="h-3.5 w-3.5 rounded border-slate-300 text-[#2563EB]"
+                  />
+                  <span className="text-xs text-slate-600">Remember me</span>
+                </label>
+
+                <motion.button
+                  whileHover={{ scale: 1.01 }}
+                  whileTap={{ scale: 0.99 }}
+                  type="submit"
+                  className="group flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#2563EB] to-[#7C3AED] py-3 text-sm font-semibold text-white shadow-lg shadow-[#2563EB]/30"
+                >
+                  Sign In
+                  <ArrowRight size={16} className="transition group-hover:translate-x-0.5" />
+                </motion.button>
+              </form>
             </div>
           </div>
-          <div>
-            <label className="mb-1.5 block text-sm font-medium text-slate-600">Password</label>
-            <div className="relative">
-              <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
-                className="w-full rounded-xl border border-slate-200 py-3 pl-10 pr-4 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
-              />
-            </div>
-          </div>
-          <motion.button
-            whileHover={{ scale: 1.01 }}
-            whileTap={{ scale: 0.99 }}
-            type="submit"
-            className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-3 text-sm font-semibold text-white shadow-md shadow-blue-500/25 hover:bg-blue-700"
-          >
-            <Shield size={18} />
-            Sign In
-          </motion.button>
-          <p className="text-center text-xs text-slate-400">
-            Demo mode: any email and password will work.
-          </p>
-        </form>
-      </motion.div>
+        </motion.div>
+      </main>
+
+      <div id="benchmarks" className="sr-only" aria-hidden />
+      <div id="datasets" className="sr-only" aria-hidden />
+      <div id="reports" className="sr-only" aria-hidden />
+
+      <LoginTrustBar />
     </div>
   );
 }

@@ -5,10 +5,14 @@ from extensions import db
 from models.project import Project
 from services.project_service import (
     ProjectServiceError,
+    cleanup_duplicate_audit_projects,
     clone_github_repo,
+    find_existing_audit_project,
+    project_directory,
     save_zip_upload,
     validate_github_url,
     validate_project_name,
+    _clear_directory,
 )
 from services.validation_service import validate_project_after_upload
 from utils.auth import get_default_user_id
@@ -39,7 +43,38 @@ def create_project():
         return _json_error(exc.message, exc.status_code)
 
     user_id = get_default_user_id()
-    project = Project(user_id=user_id, name=name, status="pending")
+    github_url = (data.get("github_url") or "").strip() or None
+
+    cleanup_duplicate_audit_projects(user_id)
+
+    existing = find_existing_audit_project(
+        user_id, name=name, github_url=github_url
+    )
+    if existing:
+        return jsonify(
+            {
+                "success": True,
+                "project_id": existing.id,
+                "name": existing.name,
+                "status": existing.status,
+                "project": existing.to_dict(),
+                "reused": True,
+            }
+        )
+
+    stored_github_url = None
+    if github_url:
+        try:
+            stored_github_url = validate_github_url(github_url)
+        except ProjectServiceError:
+            stored_github_url = None
+
+    project = Project(
+        user_id=user_id,
+        name=name,
+        status="pending",
+        github_url=stored_github_url,
+    )
     db.session.add(project)
     db.session.commit()
 
@@ -50,6 +85,7 @@ def create_project():
             "name": project.name,
             "status": project.status,
             "project": project.to_dict(),
+            "reused": False,
         }
     )
 
@@ -65,16 +101,20 @@ def upload_zip():
     if not project:
         return _json_error("Project not found.", 404)
 
-    if project.status not in ("pending", "failed"):
-        return _json_error("Project already has content uploaded.")
+    if project.status == "processing":
+        return _json_error("Project is currently being processed.")
 
     zip_file = request.files.get("zip_file")
+    should_replace = project.status != "pending" or project.github_url is not None
+
     project.status = "processing"
+    project.github_url = None
     db.session.commit()
 
     try:
+        if should_replace:
+            _clear_directory(project_directory(project.id))
         save_zip_upload(project.id, zip_file)
-        project.github_url = None
         db.session.commit()
         scan_summary = validate_project_after_upload(project)
     except ProjectServiceError as exc:
@@ -110,8 +150,8 @@ def import_github():
     if not project:
         return _json_error("Project not found.", 404)
 
-    if project.status not in ("pending", "failed"):
-        return _json_error("Project already has content uploaded.")
+    if project.status == "processing":
+        return _json_error("Project is currently being processed.")
 
     try:
         github_url = validate_github_url(data.get("github_url"))

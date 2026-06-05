@@ -59,7 +59,7 @@ function NavSection({ title, items }) {
 export default function Sidebar({ isNewAudit = false }) {
   const navigate = useNavigate();
   const auditCtx = useNewAudit();
-  const sidebarOpen = isNewAudit ? (auditCtx?.sidebarOpen ?? true) : true;
+  const sidebarOpen = auditCtx?.sidebarOpen ?? true;
 
   const handleLogout = () => {
     logout();
@@ -70,15 +70,13 @@ export default function Sidebar({ isNewAudit = false }) {
     auditCtx?.setSidebarOpen((open) => !open);
   };
 
-  const asideClass = isNewAudit
-    ? sidebarOpen
-      ? "w-64 translate-x-0"
-      : "-translate-x-full lg:w-0 lg:translate-x-0 lg:overflow-hidden lg:border-r-0 lg:opacity-0"
-    : "w-64 translate-x-0";
+  const asideClass = sidebarOpen
+    ? "w-64 translate-x-0"
+    : "-translate-x-full lg:w-0 lg:translate-x-0 lg:overflow-hidden lg:border-r-0 lg:opacity-0";
 
   return (
     <>
-      {isNewAudit && sidebarOpen && (
+      {sidebarOpen && (
         <button
           type="button"
           aria-label="Close sidebar overlay"
@@ -100,16 +98,14 @@ export default function Sidebar({ isNewAudit = false }) {
                 <p className="text-xs text-slate-500">Code Intelligence</p>
               </div>
             </div>
-            {isNewAudit && (
-              <button
-                type="button"
-                onClick={toggleSidebar}
-                aria-label={sidebarOpen ? "Close sidebar" : "Open sidebar"}
-                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-slate-600 transition hover:bg-slate-100"
-              >
-                <Menu size={20} />
-              </button>
-            )}
+            <button
+              type="button"
+              onClick={toggleSidebar}
+              aria-label={sidebarOpen ? "Close sidebar" : "Open sidebar"}
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-slate-600 transition hover:bg-slate-100"
+            >
+              <Menu size={20} />
+            </button>
           </div>
         </div>
 

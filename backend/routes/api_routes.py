@@ -2,6 +2,7 @@
 from flask import Blueprint, jsonify
 
 from models.project import Project
+from services.project_service import cleanup_duplicate_audit_projects
 from services.validation_service import validate_project_after_upload
 from utils.auth import get_default_user_id
 
@@ -15,8 +16,9 @@ def health():
 
 @api_bp.route("/projects", methods=["GET"])
 def list_projects():
-    """List all projects for the default user."""
+    """List unique audit projects for the default user (one per repo or ZIP)."""
     user_id = get_default_user_id()
+    cleanup_duplicate_audit_projects(user_id)
     projects = (
         Project.query.filter_by(user_id=user_id)
         .order_by(Project.created_at.desc())

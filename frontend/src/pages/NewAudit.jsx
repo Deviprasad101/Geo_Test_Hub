@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { AlertCircle } from "lucide-react";
 import UploadPanel, { canStartAudit } from "../components/UploadPanel";
 import ProjectStructureCard from "../components/ProjectStructureCard";
@@ -7,11 +8,13 @@ import DatasetValidationCard from "../components/DatasetValidationCard";
 import BenchmarkCard, { AuditFooter } from "../components/BenchmarkCard";
 import AuditProgressLoader from "../components/AuditProgressLoader";
 import AuditPageContainer from "../components/AuditPageContainer";
-import { runAudit } from "../api/audit";
+import { loadAuditProjectResults, runAudit } from "../api/audit";
 import { computeBenchmarkScores } from "../lib/benchmarkUtils";
 import { useNewAudit } from "../context/NewAuditContext";
 
 export default function NewAudit() {
+  const location = useLocation();
+  const navigate = useNavigate();
   const auditCtx = useNewAudit();
   const [zipFile, setZipFile] = useState(null);
   const [githubUrl, setGithubUrl] = useState("");
@@ -29,6 +32,48 @@ export default function NewAudit() {
     auditCtx?.setAllowScroll(auditStarted);
     return () => auditCtx?.setAllowScroll(false);
   }, [auditStarted, auditCtx]);
+
+  useEffect(() => {
+    const projectId = location.state?.projectId;
+    if (!projectId) return undefined;
+
+    let cancelled = false;
+
+    const openPastAudit = async () => {
+      setAuditStarted(true);
+      setAuditing(true);
+      setError(null);
+      setAnalysis(null);
+      setScanSummary(null);
+      setProgress(10);
+
+      try {
+        const result = await loadAuditProjectResults(projectId);
+        if (cancelled) return;
+        setProgress(100);
+        setScanSummary(result.scan);
+        setAnalysis(result.scan?.analysis || null);
+      } catch (err) {
+        if (cancelled) return;
+        setError(
+          err.message ||
+            "Could not load this audit. Start the backend and try again from Past Audits."
+        );
+      } finally {
+        if (!cancelled) {
+          setAuditing(false);
+          setProgress(0);
+        }
+      }
+    };
+
+    openPastAudit();
+    navigate(location.pathname, { replace: true, state: {} });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [location.state?.projectId, location.pathname, navigate]);
 
   useEffect(() => {
     if (!auditing) {
