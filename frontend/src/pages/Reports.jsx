@@ -24,7 +24,6 @@ import {
   getReportSection,
 } from "../lib/reportUtils";
 import ReportCard from "../components/reports/ReportCard";
-import ReportFeatureFooter from "../components/reports/ReportFeatureFooter";
 
 function StatusBadge({ status }) {
   const isReady = status === "ready" || status === "uploaded";
@@ -244,8 +243,6 @@ export default function Reports() {
           ))}
         </div>
       )}
-
-      {!loadingList && projects.length > 0 && <ReportFeatureFooter />}
 
       <AnimatePresence>
         {viewData && (

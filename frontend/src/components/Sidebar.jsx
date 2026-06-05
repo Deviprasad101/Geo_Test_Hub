@@ -56,7 +56,7 @@ function NavSection({ title, items }) {
   );
 }
 
-export default function Sidebar({ isNewAudit = false }) {
+export default function Sidebar({ showUserProfile = false }) {
   const navigate = useNavigate();
   const auditCtx = useNewAudit();
   const sidebarOpen = auditCtx?.sidebarOpen ?? true;
@@ -116,7 +116,7 @@ export default function Sidebar({ isNewAudit = false }) {
         </div>
 
         <div className="border-t border-slate-100 p-4">
-          {isNewAudit && (
+          {showUserProfile && (
             <div className="mb-3 flex min-w-0 items-center gap-3 px-3">
               <div
                 className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-primary to-secondary text-sm font-bold text-white"
