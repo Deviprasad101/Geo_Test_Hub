@@ -41,7 +41,7 @@ export default function PastAudits() {
       setAudits([]);
       setError(
         err.message ||
-          "Could not load past audits. Start the backend (python app.py in backend/) and try again."
+          "Could not load past audits. Start the backend on port 8000 and try again."
       );
     } finally {
       setLoading(false);

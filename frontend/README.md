@@ -1,16 +1,17 @@
 # GeoAudit – Code Intelligence (Frontend)
 
-React-only enterprise dashboard. **No backend required** — mock data and simulated audits.
-
-## Stack
-
-- Vite + React 18
-- React Router 6
-- Tailwind CSS
-- Lucide React icons
-- Framer Motion
+React dashboard for GeoJSON validation. Connects to the GVIP FastAPI backend in `../backend` on port 8000.
 
 ## Run
+
+Start the backend first:
+
+```powershell
+cd ../docker
+docker compose up --build
+```
+
+Then start the frontend:
 
 ```powershell
 cd frontend
@@ -20,20 +21,18 @@ npm run dev
 
 Open http://localhost:5173
 
+Vite proxies `/api/v1` and `/health` to `http://localhost:8000` (see `vite.config.js`).
+
 ## Login
 
-Any email and password → Sign In → Dashboard.
-
-There are **no HTML files in this folder** (no `index.html`, no `.vite-entry.html`). Vite uses `vite-plugin-html-entry.js` to mount React from `src/main.jsx` only; a hidden cache file lives under `node_modules/.cache/` (not part of your source). Fonts and title come from `src/index.css` and `App.jsx`.
+Register or sign in with your GVIP account. The backend must be running on port 8000.
 
 ## Structure
 
 ```
 src/
-  components/   Sidebar, Navbar, UploadPanel, AnalysisCard, …
+  components/   Sidebar, Navbar, UploadPanel, CodeAnalysisCard, …
   pages/        Login, NewAudit, PastAudits, …
-  layouts/      DashboardLayout
-  routes/       AppRoutes
-  data/         mockData.js
-  lib/          auth.js (localStorage)
+  api/          gvip.js, audit.js, gvipAdapter.js
+  lib/          auth.js, reportUtils.js, benchmarkUtils.js
 ```

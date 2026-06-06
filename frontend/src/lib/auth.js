@@ -1,19 +1,52 @@
-const AUTH_KEY = "geoaudit_auth";
+import { gvip } from "../api/gvip";
+
+const TOKEN_KEY = "geoaudit_token";
+const USER_KEY = "geoaudit_user";
+
+export function getToken() {
+  return localStorage.getItem(TOKEN_KEY);
+}
 
 export function isAuthenticated() {
-  return localStorage.getItem(AUTH_KEY) === "true";
+  return Boolean(getToken());
 }
 
-export function login(email) {
-  localStorage.setItem(AUTH_KEY, "true");
-  localStorage.setItem("geoaudit_user", email || "user@geoaudit.local");
-}
-
-export function logout() {
-  localStorage.removeItem(AUTH_KEY);
-  localStorage.removeItem("geoaudit_user");
+export function getUser() {
+  const raw = localStorage.getItem(USER_KEY);
+  if (!raw) return null;
+  try {
+    return JSON.parse(raw);
+  } catch {
+    return null;
+  }
 }
 
 export function getUserEmail() {
-  return localStorage.getItem("geoaudit_user") || "";
+  return getUser()?.email || "";
+}
+
+function persistSession(tokenResponse) {
+  localStorage.setItem(TOKEN_KEY, tokenResponse.access_token);
+  localStorage.setItem(USER_KEY, JSON.stringify(tokenResponse.user));
+}
+
+export async function login(email, password) {
+  const response = await gvip.auth.login({ email, password });
+  persistSession(response);
+  return response.user;
+}
+
+export async function register({ email, password, fullName }) {
+  const response = await gvip.auth.register({
+    email,
+    password,
+    full_name: fullName,
+  });
+  persistSession(response);
+  return response.user;
+}
+
+export function logout() {
+  localStorage.removeItem(TOKEN_KEY);
+  localStorage.removeItem(USER_KEY);
 }

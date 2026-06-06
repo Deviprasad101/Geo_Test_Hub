@@ -1,6 +1,7 @@
 # Frontend
 frontend/node_modules/
 frontend/dist/
+frontend/.env
 
 # Backend Python
 backend/__pycache__/
@@ -9,17 +10,11 @@ backend/*.py[cod]
 backend/*.egg-info/
 backend/.venv/
 backend/venv/
-backend/env/
-
-# Environment
 backend/.env
 
-# SQLite dev database (when USE_SQLITE=1)
-backend/geo_test_hub.db
-
-# Uploads (user content)
-backend/uploads/projects/*/
-!backend/uploads/projects/.gitkeep
+# Storage (user uploads)
+storage/uploads/**
+!storage/uploads/.gitkeep
 
 # IDE
 .idea/

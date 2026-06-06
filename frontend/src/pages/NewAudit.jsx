@@ -16,8 +16,8 @@ export default function NewAudit() {
   const location = useLocation();
   const navigate = useNavigate();
   const auditCtx = useNewAudit();
-  const [zipFile, setZipFile] = useState(null);
-  const [githubUrl, setGithubUrl] = useState("");
+  const [geoFile, setGeoFile] = useState(null);
+  const [projectName, setProjectName] = useState("");
   const [auditing, setAuditing] = useState(false);
   const [error, setError] = useState(null);
   const [analysis, setAnalysis] = useState(null);
@@ -40,6 +40,7 @@ export default function NewAudit() {
     let cancelled = false;
 
     const openPastAudit = async () => {
+      auditCtx?.setAllowScroll(true);
       setAuditStarted(true);
       setAuditing(true);
       setError(null);
@@ -50,6 +51,14 @@ export default function NewAudit() {
       try {
         const result = await loadAuditProjectResults(projectId);
         if (cancelled) return;
+        if (result.pending) {
+          setError("This validation is still running. Refresh in a moment.");
+          return;
+        }
+        if (!result.scan) {
+          setError("No validation results yet for this project.");
+          return;
+        }
         setProgress(100);
         setScanSummary(result.scan);
         setAnalysis(result.scan?.analysis || null);
@@ -94,7 +103,8 @@ export default function NewAudit() {
   }, [auditing]);
 
   const startAudit = async () => {
-    if (!canStartAudit(zipFile, githubUrl)) return;
+    if (!canStartAudit(geoFile)) return;
+    auditCtx?.setAllowScroll(true);
     setAuditStarted(true);
     setAuditing(true);
     setError(null);
@@ -103,7 +113,7 @@ export default function NewAudit() {
     setProgress(5);
 
     try {
-      const result = await runAudit({ zipFile, githubUrl });
+      const result = await runAudit({ geoFile, projectName });
       setProgress(100);
       await new Promise((r) => setTimeout(r, 350));
       setScanSummary(result.scan);
@@ -111,7 +121,7 @@ export default function NewAudit() {
     } catch (err) {
       setError(
         err.message ||
-          "Audit failed. Start the backend (python app.py in backend/) and try again."
+          "Validation failed. Start the backend (docker compose or uvicorn on port 8000) and try again."
       );
     } finally {
       setAuditing(false);
@@ -142,14 +152,14 @@ export default function NewAudit() {
     >
       <UploadPanel
         compact={!auditStarted}
-        zipFile={zipFile}
-        setZipFile={(f) => {
-          setZipFile(f);
+        geoFile={geoFile}
+        setGeoFile={(f) => {
+          setGeoFile(f);
           resetInputs();
         }}
-        githubUrl={githubUrl}
-        setGithubUrl={(url) => {
-          setGithubUrl(url);
+        projectName={projectName}
+        setProjectName={(name) => {
+          setProjectName(name);
           resetInputs();
         }}
         disabled={auditing}

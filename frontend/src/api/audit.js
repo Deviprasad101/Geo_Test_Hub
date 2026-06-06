@@ -1,97 +1,166 @@
-const API_BASE = "";
+import { gvip, pollJobUntilDone } from "./gvip";
+import {
+  adaptGvipReportToScan,
+  deriveProjectStatus,
+  flattenReportIssues,
+  toAuditProject,
+} from "./gvipAdapter";
 
-async function parseJson(res) {
-  const data = await res.json().catch(() => ({}));
-  if (!res.ok) {
-    throw new Error(data.error || data.message || `Request failed (${res.status})`);
+export function auditProjectName(geoFile, projectName) {
+  if (projectName?.trim()) return projectName.trim();
+  if (geoFile?.name) {
+    return geoFile.name.replace(/\.geojson$/i, "").replace(/\.json$/i, "") || "geojson-upload";
   }
-  return data;
+  return `validation-${Date.now()}`;
 }
 
-export function auditProjectName(zipFile, githubUrl) {
-  if (zipFile?.name) {
-    return zipFile.name.replace(/\.zip$/i, "") || "zip-upload";
-  }
-  const match = githubUrl?.trim().match(/github\.com\/[^/]+\/([^/.]+)/i);
-  return match?.[1] || `github-audit-${Date.now()}`;
+async function getLatestJob(projectId) {
+  const jobs = await gvip.projects.jobs(projectId);
+  if (!jobs.length) return null;
+  return jobs.sort(
+    (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+  )[0];
 }
 
-export async function createAuditProject(name, githubUrl) {
-  const body = { name };
-  if (githubUrl?.trim()) {
-    body.github_url = githubUrl.trim();
+async function loadProjectReport(projectId) {
+  const project = await gvip.projects.get(projectId);
+  const latestJob = await getLatestJob(projectId);
+
+  if (!latestJob) {
+    return {
+      project: toAuditProject(project, null),
+      scan: null,
+    };
   }
-  const res = await fetch(`${API_BASE}/project/create`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    credentials: "include",
-    body: JSON.stringify(body),
+
+  if (latestJob.status === "pending" || latestJob.status === "running") {
+    return {
+      project: toAuditProject(project, latestJob),
+      scan: null,
+      pending: true,
+    };
+  }
+
+  if (latestJob.status === "failed") {
+    throw new Error(latestJob.error_message || "Validation job failed.");
+  }
+
+  const report = latestJob.result_id
+    ? await gvip.reports.get(latestJob.result_id)
+    : await gvip.reports.byJob(latestJob.id);
+
+  const files = await gvip.projects.files(projectId);
+  const fileMeta = files.find((file) => file.id === latestJob.project_file_id) || files[0] || {};
+
+  const adapted = adaptGvipReportToScan(report, project, fileMeta);
+  adapted.project.status = deriveProjectStatus(project, latestJob);
+  return adapted;
+}
+
+async function runValidation(projectId, uploadedFile) {
+  let job;
+  try {
+    job = await gvip.jobs.create({
+      project_id: projectId,
+      project_file_id: uploadedFile.id,
+    });
+    job = await pollJobUntilDone(job.id);
+  } catch (err) {
+    const syncReport = await gvip.validators.validateSync(uploadedFile.id, projectId);
+    const project = await gvip.projects.get(projectId);
+    return adaptGvipReportToScan(syncReport, project, uploadedFile);
+  }
+
+  if (job.status === "failed") {
+    throw new Error(job.error_message || "Validation job failed.");
+  }
+
+  const report = job.result_id
+    ? await gvip.reports.get(job.result_id)
+    : await gvip.reports.byJob(job.id);
+  const project = await gvip.projects.get(projectId);
+  const adapted = adaptGvipReportToScan(report, project, uploadedFile);
+  adapted.project.status = deriveProjectStatus(project, job);
+  return adapted;
+}
+
+export async function createAuditProject(name, description) {
+  const project = await gvip.projects.create({
+    name,
+    description: description?.trim() || undefined,
   });
-  return parseJson(res);
+  return { success: true, project_id: project.id, project };
 }
 
-export async function uploadAuditZip(projectId, zipFile) {
-  const form = new FormData();
-  form.append("project_id", String(projectId));
-  form.append("zip_file", zipFile);
-  const res = await fetch(`${API_BASE}/project/upload`, {
-    method: "POST",
-    credentials: "include",
-    body: form,
-  });
-  return parseJson(res);
+export async function uploadAuditGeojson(projectId, geoFile) {
+  const uploaded = await gvip.upload.geojson(projectId, geoFile);
+  return { success: true, upload: uploaded };
 }
 
-export async function importAuditGithub(projectId, githubUrl) {
-  const res = await fetch(`${API_BASE}/project/github`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    credentials: "include",
-    body: JSON.stringify({ project_id: projectId, github_url: githubUrl.trim() }),
-  });
-  return parseJson(res);
-}
-
-export async function runAudit({ zipFile, githubUrl }) {
-  const name = auditProjectName(zipFile, githubUrl);
-  const created = await createAuditProject(name, githubUrl);
-  const projectId = created.project_id;
-
-  if (zipFile) {
-    return uploadAuditZip(projectId, zipFile);
-  }
-  return importAuditGithub(projectId, githubUrl);
+export async function runAudit({ geoFile, projectName, description }) {
+  const name = auditProjectName(geoFile, projectName);
+  const created = await createAuditProject(name, description);
+  const uploaded = await uploadAuditGeojson(created.project_id, geoFile);
+  return runValidation(created.project_id, uploaded.upload);
 }
 
 export async function listAuditProjects() {
-  const res = await fetch(`${API_BASE}/api/projects`, {
-    credentials: "include",
-  });
-  const data = await parseJson(res);
-  return data.projects || [];
+  const projects = await gvip.projects.list();
+  const withStatus = await Promise.all(
+    projects.map(async (project) => {
+      const latestJob = project.job_count > 0 ? await getLatestJob(project.id) : null;
+      return toAuditProject(project, latestJob);
+    })
+  );
+  return withStatus;
 }
 
 export async function getAuditProject(projectId) {
-  const res = await fetch(`${API_BASE}/api/projects/${projectId}`, {
-    credentials: "include",
-  });
-  const data = await parseJson(res);
-  return data.project;
+  const project = await gvip.projects.get(projectId);
+  const latestJob = await getLatestJob(projectId);
+  return toAuditProject(project, latestJob);
 }
 
 export async function loadAuditProjectResults(projectId) {
-  const res = await fetch(`${API_BASE}/api/projects/${projectId}/scan`, {
-    method: "POST",
-    credentials: "include",
-  });
-  return parseJson(res);
+  return loadProjectReport(projectId);
+}
+
+export async function getDashboardStats() {
+  return gvip.reports.dashboard();
+}
+
+export async function listValidationIssues() {
+  const dashboard = await getDashboardStats();
+  return flattenReportIssues(dashboard.recent_reports || []);
+}
+
+export async function listDatasetFiles() {
+  const projects = await gvip.projects.list();
+  const rows = await Promise.all(
+    projects.map(async (project) => {
+      const files = await gvip.projects.files(project.id);
+      return files.map((file) => ({
+        id: file.id,
+        name: file.original_filename || file.filename,
+        records: file.feature_count ?? 0,
+        status:
+          file.feature_count === null
+            ? "Warning"
+            : file.feature_count > 0
+              ? "Valid"
+              : "Failed",
+        lastUpdated: file.created_at,
+        projectName: project.name,
+      }));
+    })
+  );
+  return rows.flat();
 }
 
 export function formatAuditRepository(project) {
-  if (project.github_url) {
-    return project.github_url.replace(/^https?:\/\//i, "");
-  }
-  return "ZIP upload";
+  if (project.description) return project.description;
+  if ((project.file_count ?? 0) > 0) return "GeoJSON validation";
+  return "No files uploaded";
 }
 
 export function formatAuditDate(isoDate) {
@@ -109,11 +178,13 @@ export function formatAuditStatus(status) {
   switch (status) {
     case "ready":
     case "uploaded":
+    case "completed":
       return { label: "Complete", tone: "success" };
     case "failed":
       return { label: "Failed", tone: "error" };
     case "processing":
     case "pending":
+    case "running":
       return { label: "Pending", tone: "pending" };
     case "errors_found":
       return { label: "Issues Found", tone: "warning" };

@@ -1,0 +1,34 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": { "id": 1 },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [0, 0],
+            [1, 1],
+            [1, 0],
+            [0, 1],
+            [0, 0]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "id": 2 },
+      "geometry": null
+    },
+    {
+      "type": "Feature",
+      "properties": { "id": 1 },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [200, 100]
+      }
+    }
+  ]
+}

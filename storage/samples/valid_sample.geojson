@@ -1,0 +1,29 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": { "name": "Sample Point" },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.4194, 37.7749]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Sample Polygon" },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [-122.5, 37.7],
+            [-122.4, 37.7],
+            [-122.4, 37.8],
+            [-122.5, 37.8],
+            [-122.5, 37.7]
+          ]
+        ]
+      }
+    }
+  ]
+}

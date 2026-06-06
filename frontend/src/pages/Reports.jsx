@@ -73,7 +73,7 @@ export default function Reports() {
       setSelectedId("");
       setError(
         err.message ||
-          "Could not load audits. Start the backend (python app.py in backend/) and try again."
+          "Could not load audits. Start the backend on port 8000 and try again."
       );
     } finally {
       setLoadingList(false);
@@ -91,6 +91,12 @@ export default function Reports() {
       try {
         const project = projects.find((p) => String(p.id) === String(projectId));
         const result = await loadAuditProjectResults(projectId);
+        if (result.pending) {
+          throw new Error("This validation is still running. Try again shortly.");
+        }
+        if (!result.scan) {
+          throw new Error("No validation results available for this project yet.");
+        }
         const projectData = result.project || project;
         setBundle(buildReportBundle(projectData, result.scan));
       } catch (err) {

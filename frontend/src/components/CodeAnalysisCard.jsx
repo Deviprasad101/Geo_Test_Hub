@@ -48,7 +48,8 @@ export default function CodeAnalysisCard({ code, scanSummary, loading }) {
     segments.length > 0 ? segments : [{ label: "None", value: 1, color: "#e2e8f0" }];
 
   const pct = (n) => (total > 0 ? Math.round((n / total) * 100) : 0);
-  const hasFileIssues = (code.issues_by_file?.length ?? 0) > 0;
+  const fileIssues = normalizeFileIssues(code.issues_by_file);
+  const hasFileIssues = fileIssues.some(({ issues }) => issues.length > 0);
 
   return (
     <CardShell>
@@ -152,12 +153,12 @@ export default function CodeAnalysisCard({ code, scanSummary, loading }) {
 
       {hasFileIssues ? (
         <ul className="mb-4 max-h-28 space-y-2 overflow-y-auto text-xs">
-          {code.issues_by_file.map(({ file, issues }) => (
+          {fileIssues.map(({ file, issues }) => (
             <li key={file} className="rounded-lg bg-slate-50 p-2">
               <p className="font-mono font-medium text-slate-700">{file}</p>
               {issues.map((issue, idx) => (
                 <p key={idx} className="mt-1 text-slate-500">
-                  {issue.severity}: {issue.message}
+                  {formatIssueLine(issue)}
                 </p>
               ))}
             </li>
@@ -198,6 +199,26 @@ function LegendRow({ color, label, count, percent }) {
       </span>
     </li>
   );
+}
+
+function normalizeFileIssues(issuesByFile) {
+  return (issuesByFile || []).map(({ file, issues, errors, warnings }) => {
+    if (Array.isArray(issues) && issues.length > 0) {
+      return { file, issues };
+    }
+    const merged = [
+      ...(errors || []).map((issue) => ({ ...issue, severity: issue.severity || "Error" })),
+      ...(warnings || []).map((issue) => ({ ...issue, severity: issue.severity || "Warning" })),
+    ];
+    return { file, issues: merged };
+  });
+}
+
+function formatIssueLine(issue) {
+  const label = issue.severity ? `${issue.severity}: ` : "";
+  const text = issue.message || issue.detail || issue.title || "Issue detected";
+  const location = issue.line && issue.line !== "—" ? ` (${issue.line})` : "";
+  return `${label}${text}${location}`;
 }
 
 function CardShell({ children }) {

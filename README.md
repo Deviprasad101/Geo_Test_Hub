@@ -1,18 +1,26 @@
 # Geo Test Hub / GeoAudit
 
-| Folder | App |
-|--------|-----|
-| `frontend/` | **GeoAudit – Code Intelligence** (React UI) |
-| `backend/` | Flask API — scans ZIP / GitHub uploads for real audit results |
+Geospatial validation platform: upload GeoJSON, run validation rules, and view reports.
 
-## GeoAudit — run frontend + backend
+## Project layout
 
-**Terminal 1 — backend** (required for real audit results):
+```
+Geo_Test_Hub/
+├── frontend/     # React + Vite UI (port 5173)
+├── backend/      # GVIP FastAPI API (port 8000)
+├── docker/       # Docker Compose (Postgres, Redis, API, Celery)
+├── database/     # PostGIS init scripts
+├── storage/      # Uploads and sample GeoJSON files
+└── README.md
+```
+
+## Quick start
+
+**Terminal 1 — backend** (Postgres, Redis, API, Celery):
 
 ```powershell
-cd backend
-venv\Scripts\activate
-python app.py
+cd docker
+docker compose up --build
 ```
 
 **Terminal 2 — frontend**:
@@ -23,93 +31,59 @@ npm install
 npm run dev
 ```
 
-Login with any email/password → http://localhost:5173 → **New Audit** → upload ZIP or GitHub URL → results reflect actual files in that upload.
+Open http://localhost:5173 → register or sign in → **New Audit** → upload `.geojson` → **Validate GeoJSON**.
 
----
+| Service | URL |
+|---------|-----|
+| Frontend | http://localhost:5173 |
+| Backend API | http://localhost:8000 |
+| API docs | http://localhost:8000/docs |
+| PostgreSQL (host) | localhost:5433 |
 
-## Project layout
-
-```
-Geo_Test_Hub/
-├── backend/          # Flask API (Python)
-├── frontend/         # React UI (Vite)
-└── README.md
-```
-
-## Architecture
-
-| Part | Stack | Port |
-|------|--------|------|
-| **Backend** | Flask + PostgreSQL | `5000` |
-| **Frontend** | React + Vite | `5173` |
-
-Run backend and frontend **in separate terminals**.
-
-## Quick Start
-
-### 1. Backend
+## Local backend (without Docker)
 
 ```powershell
-cd backend
-python -m venv venv
-venv\Scripts\activate
+cd docker
+docker compose up postgres redis
+
+cd ..\backend
+python -m venv .venv
+.venv\Scripts\activate
 pip install -r requirements.txt
 copy .env.example .env
-# Edit .env — DB_USER, DB_PASSWORD, DB_NAME, SECRET_KEY
-
-$env:FLASK_APP="app.py"
-flask init-db
-flask seed-user
-python app.py
+alembic upgrade head
+uvicorn app.main:app --reload
 ```
 
-API: http://localhost:5000
-
-### 2. Frontend
-
-```powershell
-cd frontend
-npm install
-npm run dev
-```
-
-UI: http://localhost:5173
-
-## User Flow
-
-1. **Dashboard** — list projects
-2. **Create Project** — name → ZIP upload **or** GitHub URL
-3. **Project detail** — scan results and errors
-
-## API Endpoints
-
-| Method | Path | Description |
-|--------|------|-------------|
-| GET | `/api/health` | Health check |
-| GET | `/api/projects` | List projects |
-| GET | `/api/projects/:id` | Project detail + errors |
-| POST | `/api/projects/:id/scan` | Re-scan project files |
-| POST | `/project/create` | JSON `{ "name" }` |
-| POST | `/project/upload` | FormData: `project_id`, `zip_file` |
-| POST | `/project/github` | JSON `{ project_id, github_url }` |
-
-## Backend structure
-
-```
-backend/
-  app.py
-  routes/
-  models/
-  services/
-  utils/
-  uploads/projects/{id}/
-  scripts/
-```
-
-## Database scripts
+Celery worker (separate terminal):
 
 ```powershell
 cd backend
-python scripts/create_database.py   # create geo_test_hub DB if missing
-python scripts/rescan_project.py 2  # re-scan project by id
+.venv\Scripts\activate
+celery -A app.workers.celery_worker.celery_app worker --loglevel=info
 ```
+
+## Validation flow
+
+```
+Upload GeoJSON → POST /api/v1/upload
+       ↓
+Create Job → POST /api/v1/jobs
+       ↓
+Celery Worker → GeoJSONValidator → PostgreSQL
+       ↓
+View Report → GET /api/v1/reports/{id}
+```
+
+Sample files: `storage/samples/valid_sample.geojson`, `storage/samples/invalid_sample.geojson`
+
+## API overview
+
+- `POST /api/v1/auth/register` — Register user
+- `POST /api/v1/auth/login` — Login (JWT)
+- `GET/POST /api/v1/projects` — Project CRUD
+- `POST /api/v1/upload` — Upload GeoJSON
+- `POST /api/v1/jobs` — Create validation job
+- `GET /api/v1/jobs/{id}/status` — Poll job status
+- `GET /api/v1/reports/{id}` — Validation report
+- `GET /api/v1/reports/{id}/export` — Download report JSON
