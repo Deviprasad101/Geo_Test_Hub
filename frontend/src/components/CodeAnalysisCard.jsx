@@ -152,15 +152,20 @@ export default function CodeAnalysisCard({ code, scanSummary, loading }) {
       </div>
 
       {hasFileIssues ? (
-        <ul className="mb-4 max-h-28 space-y-2 overflow-y-auto text-xs">
+        <ul className="mb-4 max-h-64 space-y-3 overflow-y-auto text-xs">
           {fileIssues.map(({ file, issues }) => (
-            <li key={file} className="rounded-lg bg-slate-50 p-2">
-              <p className="font-mono font-medium text-slate-700">{file}</p>
-              {issues.map((issue, idx) => (
-                <p key={idx} className="mt-1 text-slate-500">
-                  {formatIssueLine(issue)}
-                </p>
-              ))}
+            <li key={file} className="rounded-xl border border-slate-100 bg-slate-50 p-3">
+              <p className="font-mono text-sm font-semibold text-slate-700">{file}</p>
+              <ul className="mt-2 space-y-2">
+                {issues.map((issue, idx) => (
+                  <li key={idx} className="rounded-lg bg-white px-3 py-2 text-slate-600">
+                    <p className="font-medium text-slate-800">{formatIssueLine(issue)}</p>
+                    {issue.detail && issue.detail !== issue.message && (
+                      <p className="mt-1 text-slate-500">{issue.detail}</p>
+                    )}
+                  </li>
+                ))}
+              </ul>
             </li>
           ))}
         </ul>

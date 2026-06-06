@@ -72,7 +72,18 @@ async function runValidation(projectId, uploadedFile) {
   }
 
   if (job.status === "failed") {
-    throw new Error(job.error_message || "Validation job failed.");
+    try {
+      const syncReport = await gvip.validators.validateSync(uploadedFile.id, projectId);
+      const project = await gvip.projects.get(projectId);
+      const adapted = adaptGvipReportToScan(syncReport, project, uploadedFile);
+      adapted.project.status = deriveProjectStatus(project, {
+        status: "completed",
+        passed: syncReport.summary?.passed ?? false,
+      });
+      return adapted;
+    } catch {
+      throw new Error(job.error_message || "Validation job failed.");
+    }
   }
 
   const report = job.result_id
@@ -99,9 +110,73 @@ export async function uploadAuditGeojson(projectId, geoFile) {
 
 export async function runAudit({ geoFile, projectName, description }) {
   const name = auditProjectName(geoFile, projectName);
-  const created = await createAuditProject(name, description);
+  const fileLabel = geoFile?.name || description;
+  const created = await createAuditProject(name, fileLabel);
   const uploaded = await uploadAuditGeojson(created.project_id, geoFile);
   return runValidation(created.project_id, uploaded.upload);
+}
+
+export function extractValidationIssues(scanSummary, fileName) {
+  if (!scanSummary?.analysis) return [];
+
+  const datasets = scanSummary.analysis.datasets || {};
+  const code = scanSummary.analysis.code || {};
+  const defaultFile =
+    fileName ||
+    datasets.file_details?.[0]?.name ||
+    code.issues_by_file?.[0]?.file ||
+    scanSummary.analysis.structure?.root_files?.[0] ||
+    "uploaded file";
+
+  const fromDatasets = (datasets.issues || []).map((issue, index) => ({
+    id: `dataset-${index}`,
+    file: defaultFile,
+    severity: issue.severity || "Medium",
+    title: issue.title || issue.message || "Validation issue",
+    description: issue.description || issue.detail || "",
+    geometry_reference: issue.geometry_reference || issue.line || null,
+  }));
+
+  if (fromDatasets.length > 0) return fromDatasets;
+
+  return (code.issues_by_file || []).flatMap((entry, fileIndex) =>
+    (entry.issues || [...(entry.errors || []), ...(entry.warnings || [])]).map(
+      (issue, issueIndex) => ({
+        id: `code-${fileIndex}-${issueIndex}`,
+        file: entry.file || defaultFile,
+        severity: issue.severity || "Medium",
+        title: issue.message || issue.title || "Validation issue",
+        description: issue.detail || issue.description || "",
+        geometry_reference: issue.line && issue.line !== "—" ? issue.line : null,
+      })
+    )
+  );
+}
+
+function auditDedupeKey(project) {
+  if (project.description?.trim()) {
+    return project.description.trim().toLowerCase();
+  }
+  return project.name.trim().toLowerCase();
+}
+
+function dedupeAuditProjects(projects) {
+  const latestByFile = new Map();
+
+  for (const project of projects) {
+    const key = auditDedupeKey(project);
+    const existing = latestByFile.get(key);
+    if (
+      !existing ||
+      new Date(project.created_at).getTime() > new Date(existing.created_at).getTime()
+    ) {
+      latestByFile.set(key, project);
+    }
+  }
+
+  return Array.from(latestByFile.values()).sort(
+    (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+  );
 }
 
 export async function listAuditProjects() {
@@ -112,7 +187,7 @@ export async function listAuditProjects() {
       return toAuditProject(project, latestJob);
     })
   );
-  return withStatus;
+  return dedupeAuditProjects(withStatus);
 }
 
 export async function getAuditProject(projectId) {
@@ -158,7 +233,7 @@ export async function listDatasetFiles() {
 }
 
 export function formatAuditRepository(project) {
-  if (project.description) return project.description;
+  if (project.description?.trim()) return project.description.trim();
   if ((project.file_count ?? 0) > 0) return "GeoJSON validation";
   return "No files uploaded";
 }
@@ -167,10 +242,12 @@ export function formatAuditDate(isoDate) {
   if (!isoDate) return "—";
   const date = new Date(isoDate);
   if (Number.isNaN(date.getTime())) return isoDate;
-  return date.toLocaleDateString(undefined, {
+  return date.toLocaleString(undefined, {
     year: "numeric",
     month: "short",
     day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
   });
 }
 

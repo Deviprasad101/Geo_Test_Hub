@@ -201,6 +201,47 @@ export default function DatasetValidationCard({ datasets, loading }) {
         </div>
       </div>
 
+      {datasets.issues?.length > 0 && (
+        <div className="mb-6">
+          <p className="mb-3 text-xs font-bold tracking-wide text-red-600">
+            VALIDATION ISSUES ({datasets.issues.length})
+          </p>
+          <ul className="max-h-64 space-y-2 overflow-y-auto">
+            {datasets.issues.map((issue, index) => (
+              <li
+                key={`${issue.title}-${index}`}
+                className="rounded-xl border border-slate-100 bg-slate-50/80 px-4 py-3"
+              >
+                <div className="flex flex-wrap items-center gap-2">
+                  <span
+                    className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${
+                      issue.severity === "Critical" || issue.severity === "High"
+                        ? "bg-red-100 text-red-700"
+                        : issue.severity === "Medium"
+                          ? "bg-amber-100 text-amber-700"
+                          : "bg-blue-100 text-blue-700"
+                    }`}
+                  >
+                    {issue.severity}
+                  </span>
+                  <p className="text-sm font-semibold text-slate-800">{issue.title}</p>
+                </div>
+                {issue.description && (
+                  <p className="mt-1.5 text-sm leading-relaxed text-slate-600">
+                    {issue.description}
+                  </p>
+                )}
+                {issue.geometry_reference && (
+                  <p className="mt-2 font-mono text-xs text-slate-500">
+                    {issue.geometry_reference}
+                  </p>
+                )}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
       {fileDetails.length > 0 && (
         <div className="grid grid-cols-1 gap-6 2xl:grid-cols-[1fr_auto]">
           <div>

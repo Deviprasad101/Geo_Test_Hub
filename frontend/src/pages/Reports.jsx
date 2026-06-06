@@ -3,8 +3,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   AlertCircle,
   Calendar,
-  Cpu,
-  FileText,
   Github,
   Loader2,
   RefreshCw,
@@ -19,34 +17,15 @@ import {
 import { downloadReportPdf } from "../lib/reportPdf";
 import {
   buildReportBundle,
-  formatLastUpdated,
+  getProjectStatusLabel,
   getReportCardMeta,
+  getReportInsights,
   getReportSection,
+  getReportSummaryStats,
 } from "../lib/reportUtils";
 import ReportCard from "../components/reports/ReportCard";
-
-function StatusBadge({ status }) {
-  const isReady = status === "ready" || status === "uploaded";
-  const isFailed = status === "failed";
-  return (
-    <span
-      className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${
-        isReady
-          ? "bg-emerald-50 text-emerald-700"
-          : isFailed
-            ? "bg-red-50 text-red-700"
-            : "bg-amber-50 text-amber-700"
-      }`}
-    >
-      <span
-        className={`h-1.5 w-1.5 rounded-full ${
-          isReady ? "bg-emerald-500" : isFailed ? "bg-red-500" : "bg-amber-500"
-        }`}
-      />
-      {status || "unknown"}
-    </span>
-  );
-}
+import ReportInsightsPanel from "../components/reports/ReportInsightsPanel";
+import ReportSummaryCards from "../components/reports/ReportSummaryCards";
 
 export default function Reports() {
   const [projects, setProjects] = useState([]);
@@ -122,8 +101,11 @@ export default function Reports() {
   }, [selectedId, loadReport]);
 
   const cards = useMemo(() => (bundle ? getReportCardMeta(bundle) : []), [bundle]);
+  const summaryStats = useMemo(() => (bundle ? getReportSummaryStats(bundle) : []), [bundle]);
+  const insights = useMemo(() => (bundle ? getReportInsights(bundle) : null), [bundle]);
   const viewData = viewReportId && bundle ? getReportSection(bundle, viewReportId) : null;
   const selectedProject = projects.find((p) => String(p.id) === selectedId);
+  const statusInfo = selectedProject ? getProjectStatusLabel(selectedProject.status) : null;
 
   const handleDownload = (reportId) => {
     if (!bundle) return;
@@ -131,59 +113,105 @@ export default function Reports() {
     downloadReportPdf(reportId, section);
   };
 
+  const handleRefresh = () => {
+    loadProjects();
+    if (selectedId) loadReport(selectedId);
+  };
+
   return (
-    <div className="space-y-5">
-      <div className="flex flex-col gap-4 rounded-2xl border border-slate-100 bg-white px-5 py-5 shadow-sm sm:flex-row sm:items-center sm:justify-between lg:px-6">
-        <div className="flex items-start gap-3">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-500 text-white shadow-md shadow-blue-500/20">
-            <FileText size={22} strokeWidth={2} />
-          </div>
+    <div className="relative space-y-6">
+      <div className="pointer-events-none absolute -left-20 -top-16 h-56 w-56 rounded-full bg-blue-200/30 blur-3xl" />
+      <div className="pointer-events-none absolute right-0 top-0 h-48 w-48 rounded-full bg-violet-200/30 blur-3xl" />
+
+      <div className="relative rounded-2xl border border-slate-100 bg-white/90 px-5 py-6 shadow-sm backdrop-blur-sm lg:px-8 lg:py-7">
+        <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
           <div>
-            <h2 className="text-xl font-bold text-slate-800">Report source</h2>
-            <p className="mt-0.5 text-sm text-slate-500">
-              Reports are generated from your saved audit results.
+            <h1 className="bg-gradient-to-r from-blue-700 via-violet-600 to-blue-600 bg-clip-text text-2xl font-bold text-transparent lg:text-3xl">
+              Report Intelligence Center
+            </h1>
+            <p className="mt-2 text-sm text-slate-500">
+              Generate, analyze, benchmark, and download professional reports.
             </p>
           </div>
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <div className="relative min-w-[240px] flex-1 sm:flex-none">
-            <Calendar
-              size={16}
-              className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
-            />
-            <select
-              value={selectedId}
-              onChange={(e) => setSelectedId(e.target.value)}
-              disabled={loadingList || projects.length === 0}
-              className="w-full appearance-none rounded-xl border border-slate-200 bg-slate-50/50 py-2.5 pl-9 pr-4 text-sm font-medium text-slate-700 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
+
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="relative min-w-[220px]">
+              <Calendar
+                size={16}
+                className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+              />
+              <select
+                value={selectedId}
+                onChange={(e) => setSelectedId(e.target.value)}
+                disabled={loadingList || projects.length === 0}
+                className="w-full appearance-none rounded-xl border border-slate-200 bg-slate-50/80 py-2.5 pl-9 pr-4 text-sm font-medium text-slate-700 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
+              >
+                {projects.length === 0 ? (
+                  <option value="">No audits available</option>
+                ) : (
+                  projects.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.name} — {formatAuditDate(p.created_at)}
+                    </option>
+                  ))
+                )}
+              </select>
+            </div>
+            <button
+              type="button"
+              onClick={handleRefresh}
+              disabled={loadingList || loadingReport}
+              className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-600 shadow-sm hover:bg-slate-50 disabled:opacity-50"
             >
-              {projects.length === 0 ? (
-                <option value="">No audits available</option>
-              ) : (
-                projects.map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.name} · {formatAuditDate(p.created_at)}
-                  </option>
-                ))
-              )}
-            </select>
+              <RefreshCw
+                size={16}
+                className={loadingList || loadingReport ? "animate-spin" : ""}
+              />
+              Refresh
+            </button>
           </div>
-          <button
-            type="button"
-            onClick={() => {
-              loadProjects();
-              if (selectedId) loadReport(selectedId);
-            }}
-            disabled={loadingList || loadingReport}
-            className="inline-flex items-center gap-2 rounded-xl border border-blue-100 bg-blue-50 px-4 py-2.5 text-sm font-semibold text-blue-600 hover:bg-blue-100 disabled:opacity-50"
-          >
-            <RefreshCw
-              size={16}
-              className={loadingList || loadingReport ? "animate-spin" : ""}
-            />
-            Refresh
-          </button>
         </div>
+
+        {!loadingList && selectedProject && (
+          <div className="mt-5 flex flex-wrap items-center gap-x-6 gap-y-2 rounded-xl border border-slate-100 bg-slate-50/70 px-4 py-3 text-sm">
+            <div className="flex items-center gap-2 text-slate-600">
+              <Github size={16} className="shrink-0 text-slate-500" />
+              <span className="font-medium text-slate-500">Repository:</span>
+              <span className="font-medium text-slate-700">
+                {formatAuditRepository(selectedProject)}
+              </span>
+            </div>
+            {statusInfo && (
+              <div className="flex items-center gap-2">
+                <span className="font-medium text-slate-500">Status:</span>
+                <span
+                  className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${
+                    statusInfo.tone === "success"
+                      ? "bg-emerald-50 text-emerald-700"
+                      : statusInfo.tone === "error"
+                        ? "bg-red-50 text-red-700"
+                        : statusInfo.tone === "warning"
+                          ? "bg-amber-50 text-amber-700"
+                          : "bg-slate-100 text-slate-600"
+                  }`}
+                >
+                  <span
+                    className={`h-1.5 w-1.5 rounded-full ${
+                      statusInfo.tone === "success"
+                        ? "bg-emerald-500"
+                        : statusInfo.tone === "error"
+                          ? "bg-red-500"
+                          : statusInfo.tone === "warning"
+                            ? "bg-amber-500"
+                            : "bg-slate-400"
+                    }`}
+                  />
+                  {statusInfo.label}
+                </span>
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {error && (
@@ -206,29 +234,6 @@ export default function Reports() {
         </div>
       )}
 
-      {!loadingList && projects.length > 0 && selectedProject && (
-        <div className="flex flex-wrap items-center gap-x-6 gap-y-2 rounded-xl border border-slate-100 bg-white px-5 py-3 text-sm shadow-sm">
-          <div className="flex items-center gap-2 text-slate-600">
-            <Github size={16} className="shrink-0 text-slate-500" />
-            <span className="font-medium text-slate-500">Repository:</span>
-            <span className="text-slate-700">{formatAuditRepository(selectedProject)}</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="font-medium text-slate-500">Status:</span>
-            <StatusBadge status={selectedProject.status} />
-          </div>
-          <div className="flex items-center gap-2 text-slate-600">
-            <span className="font-medium text-slate-500">Last updated:</span>
-            <span>{formatLastUpdated(bundle?.generatedAt || selectedProject.created_at)}</span>
-          </div>
-          <div className="flex items-center gap-2 text-slate-600">
-            <Cpu size={15} className="text-violet-500" />
-            <span className="font-medium text-slate-500">Generated by:</span>
-            <span className="font-medium text-slate-700">Geo Test Hub Engine</span>
-          </div>
-        </div>
-      )}
-
       {!loadingList && projects.length > 0 && loadingReport && (
         <div className="flex items-center justify-center gap-2 py-12 text-slate-500">
           <Loader2 className="h-5 w-5 animate-spin text-primary" />
@@ -237,17 +242,23 @@ export default function Reports() {
       )}
 
       {!loadingList && !loadingReport && bundle && (
-        <div className="grid gap-5 lg:grid-cols-3">
-          {cards.map((report, i) => (
-            <ReportCard
-              key={report.id}
-              report={report}
-              index={i}
-              onView={setViewReportId}
-              onDownload={handleDownload}
-            />
-          ))}
-        </div>
+        <>
+          <ReportSummaryCards stats={summaryStats} />
+
+          <div className="grid gap-5 lg:grid-cols-3">
+            {cards.map((report, i) => (
+              <ReportCard
+                key={report.id}
+                report={report}
+                index={i}
+                onView={setViewReportId}
+                onDownload={handleDownload}
+              />
+            ))}
+          </div>
+
+          {insights && <ReportInsightsPanel insights={insights} />}
+        </>
       )}
 
       <AnimatePresence>

@@ -8,7 +8,12 @@ import DatasetValidationCard from "../components/DatasetValidationCard";
 import BenchmarkCard, { AuditFooter } from "../components/BenchmarkCard";
 import AuditProgressLoader from "../components/AuditProgressLoader";
 import AuditPageContainer from "../components/AuditPageContainer";
-import { loadAuditProjectResults, runAudit } from "../api/audit";
+import {
+  extractValidationIssues,
+  loadAuditProjectResults,
+  runAudit,
+} from "../api/audit";
+import ValidationIssuesPanel from "../components/ValidationIssuesPanel";
 import { computeBenchmarkScores } from "../lib/benchmarkUtils";
 import { useNewAudit } from "../context/NewAuditContext";
 
@@ -27,6 +32,8 @@ export default function NewAudit() {
 
   const showResults = Boolean(analysis);
   const showResultsSection = auditing || showResults;
+  const validationIssues = extractValidationIssues(scanSummary, geoFile?.name);
+  const hasIssueDetails = validationIssues.length > 0;
 
   useEffect(() => {
     auditCtx?.setAllowScroll(auditStarted);
@@ -118,7 +125,12 @@ export default function NewAudit() {
       await new Promise((r) => setTimeout(r, 350));
       setScanSummary(result.scan);
       setAnalysis(result.scan?.analysis || null);
+      if (result.scan && !result.scan.passed) {
+        setError(null);
+      }
     } catch (err) {
+      setAnalysis(null);
+      setScanSummary(null);
       setError(
         err.message ||
           "Validation failed. Start the backend (docker compose or uvicorn on port 8000) and try again."
@@ -178,6 +190,16 @@ export default function NewAudit() {
 
       {showResultsSection && (
         <AuditPageContainer className="space-y-6">
+          {hasIssueDetails && (
+            <ValidationIssuesPanel
+              issues={validationIssues}
+              fileName={geoFile?.name}
+              passed={scanSummary?.passed === true}
+              errorCount={scanSummary?.error_count ?? 0}
+              warningCount={scanSummary?.warning_count ?? 0}
+            />
+          )}
+
           <div className="audit-results-grid">
             <div className="min-w-0">
               <ProjectStructureCard

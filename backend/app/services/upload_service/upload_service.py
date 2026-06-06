@@ -50,13 +50,10 @@ class UploadService:
 
         try:
             geojson_data = json.loads(content)
-        except json.JSONDecodeError as exc:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Invalid JSON structure",
-            ) from exc
-
-        feature_count = self._count_features(geojson_data)
+            feature_count = self._count_features(geojson_data)
+        except json.JSONDecodeError:
+            # Keep invalid JSON so the validator can return detailed issues.
+            feature_count = None
 
         storage_dir = Path(settings.STORAGE_PATH) / str(project_id)
         storage_dir.mkdir(parents=True, exist_ok=True)

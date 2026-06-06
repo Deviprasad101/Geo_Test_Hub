@@ -160,4 +160,57 @@
       grid-template-columns: repeat(3, minmax(0, 1fr));
     }
   }
+  .sparkline-wave-line {
+    filter: drop-shadow(0 0 2px currentColor);
+  }
+  .animated-wave-chart {
+    position: relative;
+    isolation: isolate;
+  }
+  .animated-wave-chart__svg {
+    display: block;
+    width: 100%;
+    overflow: hidden;
+    border-radius: 6px;
+  }
+  .animated-wave-chart__bg {
+    fill: rgba(248, 250, 252, 0.9);
+    stroke: rgba(226, 232, 240, 0.9);
+    stroke-width: 1;
+  }
+  .animated-wave-chart__grid {
+    stroke: rgba(203, 213, 225, 0.45);
+    stroke-width: 0.75;
+    stroke-dasharray: 3 4;
+  }
+  .animated-wave-chart__empty {
+    fill: rgba(255, 255, 255, 0.72);
+  }
+  .animated-wave-chart__level-line {
+    stroke-width: 1;
+    stroke-dasharray: 4 3;
+    opacity: 0.35;
+    vector-effect: non-scaling-stroke;
+  }
+  .animated-wave-chart__line {
+    vector-effect: non-scaling-stroke;
+  }
+  .animated-wave-chart__glow {
+    vector-effect: non-scaling-stroke;
+  }
+  .animated-wave-chart__fill {
+    opacity: 0.92;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .sparkline-wave-line {
+      filter: none;
+    }
+    .animated-wave-chart__glow,
+    .animated-wave-chart__pulse {
+      display: none;
+    }
+    .animated-wave-chart__fill {
+      opacity: 0.35;
+    }
+  }
 }

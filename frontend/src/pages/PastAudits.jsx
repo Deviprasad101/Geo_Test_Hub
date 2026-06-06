@@ -89,7 +89,7 @@ export default function PastAudits() {
           <thead className="border-b border-slate-100 bg-slate-50/80 text-xs font-semibold uppercase tracking-wide text-slate-600">
             <tr>
               <th className="px-6 py-4">Audit Name</th>
-              <th className="px-6 py-4">Repository</th>
+              <th className="px-6 py-4">File</th>
               <th className="px-6 py-4">Date</th>
               <th className="px-6 py-4">Status</th>
               <th className="px-6 py-4">Action</th>
