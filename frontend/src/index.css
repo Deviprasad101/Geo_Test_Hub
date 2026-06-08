@@ -223,6 +223,49 @@
     transform: translateY(-2px);
     box-shadow: 0 8px 24px rgba(37, 99, 235, 0.08);
   }
+  .login-float-input {
+    padding: 0.875rem 3rem;
+    transition: padding 0.25s ease, color 0.2s ease;
+  }
+  .login-float-input:focus,
+  .login-float-input:not(:placeholder-shown) {
+    padding-top: 1.75rem;
+    padding-bottom: 0.65rem;
+  }
+  .login-field-inner:has(.login-float-input:-webkit-autofill) .login-float-input {
+    padding-top: 1.75rem;
+    padding-bottom: 0.65rem;
+  }
+  .login-float-label {
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 0.875rem;
+    color: #94a3b8;
+    transition: top 0.25s ease, transform 0.25s ease, font-size 0.25s ease, color 0.2s ease;
+  }
+  .login-float-input:focus ~ .login-float-label,
+  .login-float-input:not(:placeholder-shown) ~ .login-float-label,
+  .login-field-inner:has(.login-float-input:-webkit-autofill) .login-float-label {
+    top: 0.55rem;
+    transform: translateY(0);
+    font-size: 0.625rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #2563eb;
+  }
+  .login-float-icon {
+    top: 50%;
+    transform: translateY(-50%);
+    color: #94a3b8;
+    transition: top 0.25s ease, transform 0.25s ease, color 0.2s ease;
+  }
+  .login-field-inner:has(.login-float-input:focus) .login-float-icon,
+  .login-field-inner:has(.login-float-input:not(:placeholder-shown)) .login-float-icon,
+  .login-field-inner:has(.login-float-input:-webkit-autofill) .login-float-icon {
+    top: 1rem;
+    transform: translateY(0);
+    color: #2563eb;
+  }
   .login-card-ambient {
     background: radial-gradient(ellipse at center, rgba(37, 99, 235, 0.12), transparent 70%);
   }
