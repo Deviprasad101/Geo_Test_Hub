@@ -24,12 +24,12 @@ const item = {
 
 export default function LoginHero() {
   return (
-    <motion.div variants={container} initial="hidden" animate="show" className="relative z-10 shrink-0">
-      <motion.div variants={item} className="mb-6 flex items-center gap-3.5">
-        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-[#2563EB] via-[#7C3AED] to-[#06B6D4] shadow-lg shadow-[#2563EB]/30">
-          <Globe size={24} className="text-white" strokeWidth={1.75} />
+    <motion.div variants={container} initial="hidden" animate="show" className="relative z-10 w-full">
+      <motion.div variants={item} className="mb-5 flex items-center gap-3.5">
+        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-[#2563EB] via-[#7C3AED] to-[#06B6D4] shadow-lg shadow-[#2563EB]/30">
+          <Globe size={22} className="text-white" strokeWidth={1.75} />
         </div>
-        <div>
+        <div className="min-w-0">
           <p className="text-base font-bold tracking-wide text-[#0F172A]">GEO TEST HUB</p>
           <p className="text-sm text-slate-500">Geospatial Intelligence &amp; Code Quality</p>
         </div>
@@ -44,7 +44,7 @@ export default function LoginHero() {
 
       <motion.h1
         variants={item}
-        className="mt-5 text-[1.75rem] font-extrabold leading-[1.15] tracking-tight text-[#0F172A] sm:text-3xl lg:text-[2.15rem] xl:text-[2.5rem]"
+        className="mt-4 max-w-2xl text-[1.65rem] font-extrabold leading-[1.2] tracking-tight text-[#0F172A] sm:text-3xl lg:text-[2rem]"
       >
         <span className="login-gradient-text">Geospatial Intelligence</span>
         <br />
@@ -53,7 +53,7 @@ export default function LoginHero() {
 
       <motion.p
         variants={item}
-        className="mt-4 max-w-lg text-sm leading-relaxed text-slate-600 sm:text-[15px]"
+        className="mt-3 max-w-xl text-sm leading-relaxed text-slate-600 sm:text-[15px]"
       >
         AI-powered auditing, dataset validation, benchmarking, and intelligent project
         insights — built for research teams and enterprises.
@@ -61,18 +61,18 @@ export default function LoginHero() {
 
       <motion.div
         variants={item}
-        className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4"
+        className="login-stat-grid mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-3"
       >
         {STATS.map((stat) => (
           <div
             key={stat.label}
-            className="login-stat-card rounded-2xl border border-white/60 bg-white/50 p-3 backdrop-blur-md sm:p-3.5"
+            className="login-stat-card flex h-full min-h-[5.5rem] flex-col items-center justify-center rounded-2xl border border-white/60 bg-white/50 px-2 py-3 text-center backdrop-blur-md sm:min-h-[6rem] sm:px-3 sm:py-3.5"
           >
-            <stat.icon size={14} className="mb-2 text-[#2563EB]" />
-            <p className="text-lg font-bold text-[#0F172A] sm:text-xl">
+            <stat.icon size={14} className="mb-1.5 shrink-0 text-[#2563EB]" />
+            <p className="text-lg font-bold leading-none text-[#0F172A] sm:text-xl">
               <AnimatedCounter value={stat.value} suffix={stat.suffix} />
             </p>
-            <p className="mt-0.5 text-[10px] font-medium leading-tight text-slate-500 sm:text-[11px]">
+            <p className="mt-1.5 min-h-[2rem] text-[10px] font-medium leading-tight text-slate-500 sm:text-[11px]">
               {stat.label}
             </p>
           </div>

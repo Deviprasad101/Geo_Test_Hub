@@ -83,32 +83,33 @@ export default function Login() {
 
       <LoginHeader />
 
-      <main className="relative z-10 mx-auto grid min-h-0 w-full max-w-[1440px] flex-1 grid-cols-1 items-center gap-8 overflow-hidden px-4 py-6 sm:px-8 lg:grid-cols-2 lg:gap-12 lg:px-12 lg:py-8">
-        <motion.section
-          id="hero"
-          initial={{ opacity: 0, x: -24 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
-          className="flex min-h-0 min-w-0 flex-col justify-center"
-        >
-          <LoginHero />
-          <LoginFeatureCards />
-        </motion.section>
+      <main className="relative z-10 mx-auto flex w-full max-w-[1320px] flex-1 items-center px-4 py-6 sm:px-6 lg:px-10 lg:py-8">
+        <div className="grid w-full grid-cols-1 items-center gap-10 lg:grid-cols-5 lg:gap-10 xl:gap-14">
+          <motion.section
+            id="hero"
+            initial={{ opacity: 0, x: -24 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+            className="flex min-w-0 flex-col justify-center lg:col-span-3"
+          >
+            <LoginHero />
+            <LoginFeatureCards />
+          </motion.section>
 
-        <motion.div
-          id="login-form"
-          initial={{ opacity: 0, y: 24 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.12, ease: [0.22, 1, 0.36, 1] }}
-          className="relative flex items-center justify-center"
-        >
-          <div className="login-card-ambient pointer-events-none absolute inset-0 rounded-[32px] blur-3xl" aria-hidden />
+          <motion.div
+            id="login-form"
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.12, ease: [0.22, 1, 0.36, 1] }}
+            className="relative flex items-center justify-center lg:col-span-2 lg:justify-end"
+          >
+            <div className="login-card-ambient pointer-events-none absolute inset-0 rounded-[32px] blur-3xl" aria-hidden />
 
-          <div className="login-login-card relative z-10 w-full max-w-[440px] p-7 sm:p-8">
-            <div className="login-login-card-glow" aria-hidden />
-            <div className="login-login-card-shine pointer-events-none absolute inset-0 rounded-[32px]" aria-hidden />
+            <div className="login-login-card relative z-10 w-full max-w-[420px] p-7 sm:p-8">
+              <div className="login-login-card-glow" aria-hidden />
+              <div className="login-login-card-shine pointer-events-none absolute inset-0 rounded-[32px]" aria-hidden />
 
-            <div className="relative">
+              <div className="relative">
               <div className="mb-7 text-center">
                 <h2 className="login-gradient-text text-[1.65rem] font-bold sm:text-[1.85rem]">
                   {isRegister ? "Create Account" : "Welcome back"}
@@ -245,9 +246,10 @@ export default function Login() {
                   )}
                 </p>
               </form>
+              </div>
             </div>
-          </div>
-        </motion.div>
+          </motion.div>
+        </div>
       </main>
     </div>
   );
