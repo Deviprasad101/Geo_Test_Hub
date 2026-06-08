@@ -1,23 +1,83 @@
 import { motion } from "framer-motion";
+import { Activity, BarChart3, Database, Globe } from "lucide-react";
+import AnimatedCounter from "../AnimatedCounter";
+
+const STATS = [
+  { value: 50, suffix: "+", label: "Projects Audited", icon: Globe },
+  { value: 100, suffix: "+", label: "Datasets Validated", icon: Database },
+  { value: 95, suffix: "%", label: "Accuracy Score", icon: BarChart3 },
+  { value: 24, suffix: "/7", label: "Monitoring", icon: Activity },
+];
+
+const container = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: { staggerChildren: 0.08, delayChildren: 0.1 },
+  },
+};
+
+const item = {
+  hidden: { opacity: 0, y: 16 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.45 } },
+};
 
 export default function LoginHero() {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-      className="relative z-10 shrink-0"
-    >
-      <p className="text-xs font-bold uppercase tracking-[0.25em] text-[#2563EB] lg:text-sm">
+    <motion.div variants={container} initial="hidden" animate="show" className="relative z-10 shrink-0">
+      <motion.div variants={item} className="mb-6 flex items-center gap-3.5">
+        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-[#2563EB] via-[#7C3AED] to-[#06B6D4] shadow-lg shadow-[#2563EB]/30">
+          <Globe size={24} className="text-white" strokeWidth={1.75} />
+        </div>
+        <div>
+          <p className="text-base font-bold tracking-wide text-[#0F172A]">GEO TEST HUB</p>
+          <p className="text-sm text-slate-500">Geospatial Intelligence &amp; Code Quality</p>
+        </div>
+      </motion.div>
+
+      <motion.span
+        variants={item}
+        className="inline-flex rounded-full border border-[#7C3AED]/25 bg-[#7C3AED]/10 px-3.5 py-1 text-[10px] font-bold uppercase tracking-[0.24em] text-[#7C3AED] sm:text-xs"
+      >
         Sandbox
-      </p>
-      <h1 className="mt-2 text-2xl font-extrabold leading-tight tracking-tight text-[#0F172A] lg:text-3xl xl:text-[2.1rem]">
-        Geospatial Intelligence &amp; Code Quality Platform
-      </h1>
-      <p className="mt-3 max-w-xl text-xs leading-relaxed text-slate-600 lg:text-sm">
+      </motion.span>
+
+      <motion.h1
+        variants={item}
+        className="mt-5 text-[1.75rem] font-extrabold leading-[1.15] tracking-tight text-[#0F172A] sm:text-3xl lg:text-[2.15rem] xl:text-[2.5rem]"
+      >
+        <span className="login-gradient-text">Geospatial Intelligence</span>
+        <br />
+        &amp; <span className="login-gradient-text">Code Quality</span> Platform
+      </motion.h1>
+
+      <motion.p
+        variants={item}
+        className="mt-4 max-w-lg text-sm leading-relaxed text-slate-600 sm:text-[15px]"
+      >
         AI-powered auditing, dataset validation, benchmarking, and intelligent project
         insights — built for research teams and enterprises.
-      </p>
+      </motion.p>
+
+      <motion.div
+        variants={item}
+        className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4"
+      >
+        {STATS.map((stat) => (
+          <div
+            key={stat.label}
+            className="login-stat-card rounded-2xl border border-white/60 bg-white/50 p-3 backdrop-blur-md sm:p-3.5"
+          >
+            <stat.icon size={14} className="mb-2 text-[#2563EB]" />
+            <p className="text-lg font-bold text-[#0F172A] sm:text-xl">
+              <AnimatedCounter value={stat.value} suffix={stat.suffix} />
+            </p>
+            <p className="mt-0.5 text-[10px] font-medium leading-tight text-slate-500 sm:text-[11px]">
+              {stat.label}
+            </p>
+          </div>
+        ))}
+      </motion.div>
     </motion.div>
   );
 }

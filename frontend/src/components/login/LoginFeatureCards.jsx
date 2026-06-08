@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { ArrowRight, BarChart3, Brain, Database, FolderSearch } from "lucide-react";
+import { BarChart3, Brain, Database, FolderSearch } from "lucide-react";
 
 const FEATURES = [
   {
@@ -8,6 +8,7 @@ const FEATURES = [
     icon: FolderSearch,
     gradient: "from-[#2563EB] to-[#06B6D4]",
     accent: "text-[#2563EB]",
+    glow: "shadow-[#2563EB]/20",
   },
   {
     title: "Code Intelligence",
@@ -15,6 +16,7 @@ const FEATURES = [
     icon: Brain,
     gradient: "from-[#7C3AED] to-[#2563EB]",
     accent: "text-[#7C3AED]",
+    glow: "shadow-[#7C3AED]/20",
   },
   {
     title: "Dataset Validation",
@@ -22,6 +24,7 @@ const FEATURES = [
     icon: Database,
     gradient: "from-[#10B981] to-[#06B6D4]",
     accent: "text-[#10B981]",
+    glow: "shadow-[#10B981]/20",
   },
   {
     title: "Benchmark Engine",
@@ -29,6 +32,7 @@ const FEATURES = [
     icon: BarChart3,
     gradient: "from-[#F59E0B] to-[#EF4444]",
     accent: "text-[#F59E0B]",
+    glow: "shadow-[#F59E0B]/20",
   },
 ];
 
@@ -36,45 +40,40 @@ export default function LoginFeatureCards() {
   return (
     <motion.div
       id="features"
-      initial={{ opacity: 0, y: 10 }}
+      initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.2 }}
-      className="login-features-panel mt-5 hidden w-full shrink-0 overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm lg:mt-6 lg:block"
+      transition={{ delay: 0.35, duration: 0.5 }}
+      className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:mt-8"
     >
-      <div className="grid grid-cols-2">
-        {FEATURES.map((f, i) => {
-          const isLeft = i % 2 === 0;
-          const isTop = i < 2;
-          return (
-            <div
-              key={f.title}
-              className={`login-feature-cell flex items-start gap-3 p-4 lg:gap-4 lg:p-5 ${
-                isLeft ? "border-r border-slate-100" : ""
-              } ${isTop ? "border-b border-slate-100" : ""}`}
+      {FEATURES.map((f, i) => (
+        <motion.div
+          key={f.title}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 + i * 0.08 }}
+          whileHover={{ y: -8, scale: 1.03 }}
+          className={`login-premium-feature-card group relative overflow-hidden rounded-2xl border border-white/70 bg-white/55 p-4 backdrop-blur-xl transition-shadow duration-300 hover:shadow-xl ${f.glow} sm:p-5`}
+        >
+          <div className="login-feature-card-border pointer-events-none absolute inset-0 rounded-2xl opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+
+          <div className="relative flex items-start gap-3.5">
+            <motion.div
+              whileHover={{ rotate: [0, -6, 6, 0] }}
+              transition={{ duration: 0.5 }}
+              className={`login-feature-icon shrink-0 rounded-xl bg-gradient-to-br ${f.gradient} p-2.5 text-white shadow-lg sm:p-3`}
+              style={{ animationDelay: `${i * 0.4}s` }}
             >
-              <div
-                className={`login-feature-icon shrink-0 rounded-xl bg-gradient-to-br ${f.gradient} p-2.5 text-white shadow-sm lg:p-3`}
-                style={{ animationDelay: `${i * 0.4}s` }}
-              >
-                <f.icon size={20} strokeWidth={1.75} className="lg:h-[22px] lg:w-[22px]" />
-              </div>
-              <div className="min-w-0 flex-1">
-                <h3 className={`text-sm font-bold leading-tight lg:text-base ${f.accent}`}>
-                  {f.title}
-                </h3>
-                <p className="mt-1 text-xs leading-snug text-slate-500 lg:text-sm">
-                  {f.desc}
-                </p>
-              </div>
-              <ArrowRight
-                size={16}
-                className={`mt-1 shrink-0 lg:h-[18px] lg:w-[18px] ${f.accent}`}
-                strokeWidth={2.5}
-              />
+              <f.icon size={20} strokeWidth={1.75} />
+            </motion.div>
+            <div className="min-w-0 flex-1">
+              <h3 className={`text-sm font-bold leading-tight sm:text-base ${f.accent}`}>
+                {f.title}
+              </h3>
+              <p className="mt-1.5 text-xs leading-snug text-slate-500 sm:text-sm">{f.desc}</p>
             </div>
-          );
-        })}
-      </div>
+          </div>
+        </motion.div>
+      ))}
     </motion.div>
   );
 }
